@@ -11,7 +11,7 @@ public partial class HealthCheckView : UserControl
         InitializeComponent();
     }
 
-    private async void QuickCleanButton_Click(object sender, RoutedEventArgs e)
+    private async void CleanButton_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is not HealthCheckViewModel viewModel)
         {
@@ -19,9 +19,10 @@ public partial class HealthCheckView : UserControl
         }
 
         var result = MessageBox.Show(
-            "Nettoyer automatiquement les fichiers temporaires système par défaut (sans revue détaillée) ?\n\n" +
-            "Pour un contrôle précis catégorie par catégorie, utilisez plutôt l'onglet Nettoyeur.",
-            "Confirmer le nettoyage rapide",
+            $"Supprimer les éléments sélectionnés ({viewModel.SelectionText}) ?\n\n" +
+            "Les fichiers nettoyés passent par la Corbeille de sécurité (Outils > Corbeille de sécurité) et peuvent être restaurés, " +
+            "sauf le contenu de la Corbeille Windows, vidé définitivement.",
+            "Confirmer le nettoyage",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question,
             MessageBoxResult.No);
@@ -31,6 +32,6 @@ public partial class HealthCheckView : UserControl
             return;
         }
 
-        await viewModel.QuickCleanCommand.ExecuteAsync(null);
+        await viewModel.CleanCommand.ExecuteAsync(null);
     }
 }

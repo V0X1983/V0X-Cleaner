@@ -6,83 +6,275 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
     <Grid>
 
     <Grid Margin="32,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Bilan de santé" FontSize="24" FontWeight="Bold" />
-            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Vue d'ensemble de l'état du système, à partir des mêmes analyses que le Nettoyeur, le Registre et le Démarrage." />
+        <!-- Accueil : présentation et bouton d'analyse -->
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560"
+                    Visibility="{Binding IsIntro, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="Bilan de santé" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,8,0,20" TextWrapping="Wrap" TextAlignment="Center"
+                       Text="Analysez votre PC en trois étapes : confidentialité, espace disque puis problèmes à résoudre. Rien n'est supprimé sans que vous l'ayez validé." />
+            <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding AnalyzeCommand}"
+                    HorizontalAlignment="Center" MinWidth="160" Padding="16,10" />
+            <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0"
+                       TextWrapping="Wrap" TextAlignment="Center" />
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="140" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" Background="{StaticResource BrushSurface}" CornerRadius="8" Padding="16" Height="100">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding OverallScore}" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"
-                               Foreground="{StaticResource BrushAccent}" />
-                    <TextBlock Text="/ 100" FontSize="12" HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
-                </StackPanel>
-            </Border>
-
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
-                <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RunCommand}"
-                        HorizontalAlignment="Left" MinWidth="120" Margin="0,0,0,8" />
-                <WrapPanel>
-                    <Button Content="Nettoyage rapide en un clic" Click="QuickCleanButton_Click" Padding="12,6" Margin="0,0,8,8" />
-                    <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" Padding="12,6" Margin="0,0,0,8" />
-                </WrapPanel>
+        <!-- Indicateur des trois étapes -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24"
+                    Visibility="{Binding IsStarted, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel Width="170">
+                <Grid Width="26" Height="26" HorizontalAlignment="Center">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource BrushTextSecondary}" />
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource BrushAccent}" Visibility="{Binding Step1Done, Converter={StaticResource BoolToVisibility}}" />
+                    <Border Width="26" Height="26" CornerRadius="13" BorderThickness="2" BorderBrush="{StaticResource BrushWarning}"
+                            Background="{StaticResource BrushBackground}" Visibility="{Binding Step1Current, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="!" FontWeight="Bold" Foreground="{StaticResource BrushWarning}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+                <TextBlock Text="Plus de confidentialité" HorizontalAlignment="Center" Margin="0,8,0,0" />
             </StackPanel>
+            <Border Width="90" Height="2" Margin="0,12,0,0" VerticalAlignment="Top"
+                    Background="{StaticResource BrushBorder}" />
+            <StackPanel Width="170">
+                <Grid Width="26" Height="26" HorizontalAlignment="Center">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource BrushTextSecondary}" />
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource BrushAccent}" Visibility="{Binding Step2Done, Converter={StaticResource BoolToVisibility}}" />
+                    <Border Width="26" Height="26" CornerRadius="13" BorderThickness="2" BorderBrush="{StaticResource BrushWarning}"
+                            Background="{StaticResource BrushBackground}" Visibility="{Binding Step2Current, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="!" FontWeight="Bold" Foreground="{StaticResource BrushWarning}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+                <TextBlock Text="Plus d'espace" HorizontalAlignment="Center" Margin="0,8,0,0" />
+            </StackPanel>
+            <Border Width="90" Height="2" Margin="0,12,0,0" VerticalAlignment="Top"
+                    Background="{StaticResource BrushBorder}" />
+            <StackPanel Width="170">
+                <Grid Width="26" Height="26" HorizontalAlignment="Center">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource BrushTextSecondary}" />
+                    <Border Width="26" Height="26" CornerRadius="13" BorderThickness="2" BorderBrush="{StaticResource BrushWarning}"
+                            Background="{StaticResource BrushBackground}" Visibility="{Binding IsProblemsStep, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="!" FontWeight="Bold" Foreground="{StaticResource BrushWarning}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+                <TextBlock Text="Résoudre les problèmes" HorizontalAlignment="Center" Margin="0,8,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Étapes 1 et 2 : catégories à nettoyer -->
+        <Grid Grid.Row="1" Visibility="{Binding IsCleaningStep, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="{Binding Headline}" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="{Binding HeadlineDescription}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Grid Grid.Row="1" Margin="12,0,12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Column="0" IsThreeState="True" IsChecked="{Binding AllSelected}" VerticalAlignment="Center" ToolTip="Tout sélectionner" />
+                <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Text="Catégorie" Foreground="{StaticResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="3" Text="Objets" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="4" Text="Taille" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Categories}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:HealthCategoryViewModel}">
+                            <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="36" />
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="110" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="20"
+                                               Foreground="{StaticResource BrushAccent}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="3" Text="{Binding CountText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Text="{Binding SizeText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Grid>
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Items}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:HealthCheckItemViewModel}">
-                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,8" Padding="14,10">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="6" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+        <!-- Étape 3 : problèmes détectés -->
+        <Grid Grid.Row="1" Visibility="{Binding IsProblemsStep, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-                                <Border Grid.Column="0" Background="{Binding SeverityBrush}" CornerRadius="3" Margin="0,0,12,0" />
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding HeadlineHighlight}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource BrushWarning}" />
+                        <TextBlock Text="{Binding Headline, StringFormat=' {0}'}" FontSize="24" FontWeight="Bold" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding HeadlineDescription}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                </StackPanel>
 
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
-                                               Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
-                                    <TextBlock Text="{Binding Recommendation}" FontSize="11" TextWrapping="Wrap"
-                                               Foreground="{StaticResource BrushAccent}" Margin="0,4,0,0" />
-                                </StackPanel>
+                <!-- État du PC -->
+                <Border Grid.Column="1" Width="360" Padding="16,12" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BrushBorder}"
+                        Background="{StaticResource BrushSurface}" VerticalAlignment="Top">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="État du PC : " FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding PcStateText}" FontWeight="SemiBold" Foreground="{StaticResource BrushWarning}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding PcStateAdvice}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,8" TextWrapping="Wrap" />
+                        <Grid Height="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="{StaticResource BrushDanger}" CornerRadius="3,0,0,3" Height="6" />
+                            <Border Grid.Column="1" Background="{StaticResource BrushWarning}" Height="6" />
+                            <Border Grid.Column="2" Background="{StaticResource BrushAccent}" CornerRadius="0,3,3,0" Height="6" />
+                        </Grid>
+                        <Grid Margin="0,2,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Médiocre" FontSize="11" Foreground="{StaticResource BrushTextSecondary}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PcStateIndex}" Value="0">
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                                <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Column="1" Text="Modéré" FontSize="11" HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PcStateIndex}" Value="1">
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                                <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Column="2" Text="Bon état" FontSize="11" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PcStateIndex}" Value="2">
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                                <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
-                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
-                                    <TextBlock Text="{Binding SeverityLabel}" Foreground="{Binding SeverityBrush}" FontWeight="SemiBold"
-                                               HorizontalAlignment="Right" />
-                                    <TextBlock Text="{Binding Score, StringFormat='{}{0}/100'}" FontSize="11"
-                                               Foreground="{StaticResource BrushTextSecondary}" HorizontalAlignment="Right" />
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            <Grid Grid.Row="1" Margin="12,0,12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Catégorie" Foreground="{StaticResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="2" Text="Problèmes" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+            </Grid>
 
-        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Problems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:HealthProblemViewModel}">
+                            <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="100" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="20"
+                                               Foreground="{StaticResource BrushWarning}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding Count}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Foreground="{StaticResource BrushWarning}" FontWeight="SemiBold" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Barre du bas -->
+        <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushBorder}" Margin="0,16,0,0" Padding="0,16,0,0"
+                Visibility="{Binding IsStarted, Converter={StaticResource BoolToVisibility}}">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsCleaningStep, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Margin="0,0,16,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectionText}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                        <TextBlock Text="Ces articles peuvent être retirés en toute sécurité" Foreground="{StaticResource BrushTextSecondary}" HorizontalAlignment="Right" />
+                    </StackPanel>
+                    <Button Content="Ignorer" Command="{Binding NextCommand}" MinWidth="90" Margin="0,0,12,0" />
+                    <Button Content="Nettoyer" Style="{StaticResource PrimaryButtonStyle}" IsEnabled="{Binding CanCleanSelection}" MinWidth="110"
+                            Click="CleanButton_Click" />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsProblemsStep, Converter={StaticResource BoolToVisibility}}">
+                    <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" Margin="0,0,12,0" />
+                    <Button Content="Nouvelle analyse" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding AnalyzeCommand}" />
+                </StackPanel>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
     </Grid>
     <controls:LoadingOverlay DataContext="{Binding Loading}" />
     </Grid>
