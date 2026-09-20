@@ -14,14 +14,18 @@ public partial class SoftwareUpdateItemViewModel(SoftwareUpdate update) : Observ
 
     public string Name => Update.Name;
 
-    public string VersionText => IsUpdated
-        ? Update.AvailableVersion
-        : $"{Update.CurrentVersion} → {Update.AvailableVersion}";
+    /// <summary>Version installée ; devient la nouvelle version une fois la mise à jour réussie.</summary>
+    public string CurrentVersion => IsUpdated ? Update.AvailableVersion : Update.CurrentVersion;
+
+    public string AvailableVersion => Update.AvailableVersion;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(VersionText))]
+    [NotifyPropertyChangedFor(nameof(CurrentVersion))]
     [NotifyPropertyChangedFor(nameof(CanUpdate))]
     private bool _isUpdated;
+
+    [ObservableProperty]
+    private bool _isSelected = true;
 
     public bool CanUpdate => !IsUpdated;
 
@@ -43,6 +47,44 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isBusy;
+
+    public int SelectedCount => Updates.Count(u => u.IsSelected && !u.IsUpdated);
+
+    public bool HasUpdates => Updates.Count > 0;
+
+    public string HeadlineCount => Updates.Count > 1 ? $"{Updates.Count} mises à jour" : $"{Updates.Count} mise à jour";
+
+    public string SelectedText => SelectedCount > 1 ? $"{SelectedCount} sélectionnés" : $"{SelectedCount} sélectionné";
+
+    /// <summary>Case « tout sélectionner » : vraie si tout est coché, indéterminée si la sélection est partielle.</summary>
+    public bool? AllSelected
+    {
+        get
+        {
+            var pending = Updates.Where(u => !u.IsUpdated).ToList();
+            if (pending.Count == 0 || pending.All(u => u.IsSelected))
+            {
+                return pending.Count == 0 ? false : true;
+            }
+
+            return pending.Any(u => u.IsSelected) ? null : false;
+        }
+        set
+        {
+            foreach (var item in Updates.Where(u => !u.IsUpdated))
+            {
+                item.IsSelected = value == true;
+            }
+        }
+    }
+
+    private void RefreshSelection()
+    {
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectedText));
+        OnPropertyChanged(nameof(AllSelected));
+        UpdateSelectedCommand.NotifyCanExecuteChanged();
+    }
 
     [ObservableProperty]
     private string _statusMessage = "Cliquez sur \"Analyser\" pour rechercher les mises à jour de vos logiciels.";
@@ -66,8 +108,20 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
             Updates.Clear();
             foreach (var update in scan.Updates)
             {
-                Updates.Add(new SoftwareUpdateItemViewModel(update));
+                var item = new SoftwareUpdateItemViewModel(update);
+                item.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName is nameof(SoftwareUpdateItemViewModel.IsSelected) or nameof(SoftwareUpdateItemViewModel.IsUpdated))
+                    {
+                        RefreshSelection();
+                    }
+                };
+                Updates.Add(item);
             }
+
+            OnPropertyChanged(nameof(HasUpdates));
+            OnPropertyChanged(nameof(HeadlineCount));
+            RefreshSelection();
 
             StatusMessage = scan.Error ?? (Updates.Count > 0
                 ? $"{Updates.Count} mise(s) à jour disponible(s)."
@@ -108,13 +162,13 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanRun))]
-    private async Task UpdateAllAsync()
+    [RelayCommand(CanExecute = nameof(CanUpdateSelected))]
+    private async Task UpdateSelectedAsync()
     {
         IsBusy = true;
         try
         {
-            foreach (var item in Updates.Where(u => !u.IsUpdated).ToList())
+            foreach (var item in Updates.Where(u => u.IsSelected && !u.IsUpdated).ToList())
             {
                 await UpdateItemAsync(item);
             }
@@ -192,10 +246,12 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
 
     private bool CanRun() => !IsBusy;
 
+    private bool CanUpdateSelected() => !IsBusy && SelectedCount > 0;
+
     partial void OnIsBusyChanged(bool value)
     {
         ScanCommand.NotifyCanExecuteChanged();
         UpdateOneCommand.NotifyCanExecuteChanged();
-        UpdateAllCommand.NotifyCanExecuteChanged();
+        UpdateSelectedCommand.NotifyCanExecuteChanged();
     }
 }
