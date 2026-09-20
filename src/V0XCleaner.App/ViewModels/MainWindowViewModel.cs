@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using V0XCleaner.Core.Abstractions;
 
 namespace V0XCleaner.App.ViewModels;
 
@@ -21,13 +23,30 @@ public partial class MainWindowViewModel : ObservableObject
 
     private readonly Dictionary<string, object> _pageCache = new();
     private readonly IServiceProvider _serviceProvider;
+    private readonly IElevationService _elevationService;
 
-    public MainWindowViewModel(IServiceProvider serviceProvider)
+    public bool IsElevated => _elevationService.IsElevated;
+
+    public string ElevationStatusLabel => IsElevated ? "Administrateur" : "Mode standard";
+
+    public MainWindowViewModel(IServiceProvider serviceProvider, IElevationService elevationService)
     {
         _serviceProvider = serviceProvider;
+        _elevationService = elevationService;
         _selectedNavigationItem = NavigationItems[0];
         _currentPage = GetOrCreatePage(_selectedNavigationItem.Key);
     }
+
+    [RelayCommand(CanExecute = nameof(CanRelaunchElevated))]
+    private void RelaunchElevated()
+    {
+        if (_elevationService.RelaunchElevated())
+        {
+            System.Windows.Application.Current?.Shutdown();
+        }
+    }
+
+    private bool CanRelaunchElevated() => !IsElevated;
 
     partial void OnSelectedNavigationItemChanged(NavigationItem value)
     {

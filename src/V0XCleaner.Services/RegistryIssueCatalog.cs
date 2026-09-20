@@ -11,13 +11,13 @@ namespace V0XCleaner.Services;
 /// le nettoyeur adapté à la nature de son scan : suppression de clé entière, suppression d'une
 /// valeur unique, ou suppression de fichier (raccourcis).
 /// </summary>
-public sealed class RegistryIssueCatalog(IRegistryBackupService backupService, ILoggerFactory loggerFactory, IPathGuard pathGuard) : IRegistryIssueCatalog
+public sealed class RegistryIssueCatalog(IRegistryBackupService backupService, ILoggerFactory loggerFactory, IPathGuard pathGuard, IQuarantineService quarantineService, ISettingsService settingsService) : IRegistryIssueCatalog
 {
     public IReadOnlyList<CleaningTask> GetTasks()
     {
         var keyCleaner = new RegistryKeyDeletionCleaner(backupService, loggerFactory.CreateLogger<RegistryKeyDeletionCleaner>());
         var valueCleaner = new RegistryValueDeletionCleaner(backupService, loggerFactory.CreateLogger<RegistryValueDeletionCleaner>());
-        var fileCleaner = new FileDeletionCleaner(pathGuard, loggerFactory.CreateLogger<FileDeletionCleaner>());
+        var fileCleaner = new FileDeletionCleaner(pathGuard, quarantineService, settingsService, loggerFactory.CreateLogger<FileDeletionCleaner>());
 
         return
         [

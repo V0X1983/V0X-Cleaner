@@ -49,7 +49,8 @@ public sealed class OrphanedComClsidScanner : IScanner
                 DisplayPath = $@"HKEY_CLASSES_ROOT\CLSID\{clsid}",
                 Category = Category,
                 SizeBytes = 0,
-                Description = $"La classe COM {clsid} référence le composant manquant \"{serverPath}\"."
+                Description = $"La classe COM {clsid} référence le composant manquant \"{serverPath}\".",
+                RequiresElevatedConfirmation = true
             });
         }
 

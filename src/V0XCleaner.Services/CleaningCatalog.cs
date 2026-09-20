@@ -12,7 +12,11 @@ namespace V0XCleaner.Services;
 /// Construit la liste une seule fois (les scanners eux-mêmes s'exécutent à la demande,
 /// cette classe ne fait que déclarer QUOI peut être nettoyé et COMMENT).
 /// </summary>
-public sealed class CleaningCatalog(IPathGuard pathGuard, ILoggerFactory loggerFactory) : ICleaningCatalog
+public sealed class CleaningCatalog(
+    IPathGuard pathGuard,
+    IQuarantineService quarantineService,
+    ISettingsService settingsService,
+    ILoggerFactory loggerFactory) : ICleaningCatalog
 {
     public IReadOnlyList<CleaningTask> GetTasks()
     {
@@ -24,7 +28,7 @@ public sealed class CleaningCatalog(IPathGuard pathGuard, ILoggerFactory loggerF
     }
 
     private FileDeletionCleaner NewFileDeletionCleaner() =>
-        new(pathGuard, loggerFactory.CreateLogger<FileDeletionCleaner>());
+        new(pathGuard, quarantineService, settingsService, loggerFactory.CreateLogger<FileDeletionCleaner>());
 
     private IEnumerable<CleaningTask> BuildSystemTasks()
     {

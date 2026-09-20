@@ -55,6 +55,12 @@ public partial class OptionsViewModel : ObservableObject
     private string _selectedTheme;
 
     [ObservableProperty]
+    private bool _quarantineEnabled;
+
+    [ObservableProperty]
+    private int _quarantineRetentionDays;
+
+    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -83,6 +89,8 @@ public partial class OptionsViewModel : ObservableObject
         _updateCheckOwner = current.UpdateCheckOwner;
         _updateCheckRepo = current.UpdateCheckRepo;
         _selectedTheme = current.Theme;
+        _quarantineEnabled = current.QuarantineEnabled;
+        _quarantineRetentionDays = current.QuarantineRetentionDays;
     }
 
     [RelayCommand(CanExecute = nameof(CanRun))]
@@ -103,6 +111,8 @@ public partial class OptionsViewModel : ObservableObject
             current.UpdateCheckOwner = UpdateCheckOwner;
             current.UpdateCheckRepo = UpdateCheckRepo;
             current.Theme = SelectedTheme;
+            current.QuarantineEnabled = QuarantineEnabled;
+            current.QuarantineRetentionDays = Math.Max(1, QuarantineRetentionDays);
 
             await _settings.SaveAsync();
 

@@ -52,7 +52,8 @@ public sealed class OrphanedFileExtensionsScanner : IScanner
                 DisplayPath = $@"HKEY_CLASSES_ROOT\{subKeyName}",
                 Category = Category,
                 SizeBytes = 0,
-                Description = $"L'extension \"{subKeyName}\" référence le type de fichier manquant \"{progId}\"."
+                Description = $"L'extension \"{subKeyName}\" référence le type de fichier manquant \"{progId}\".",
+                RequiresElevatedConfirmation = true
             });
         }
 

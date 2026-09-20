@@ -44,7 +44,8 @@ internal sealed class StartupFolderStartupProvider : IStartupProvider
                     Command = string.IsNullOrWhiteSpace(target) ? file : target,
                     Source = Source,
                     IsEnabled = enabled,
-                    Location = folderPath
+                    Location = folderPath,
+                    RequiresElevation = hivePrefix == "HKLM"
                 });
             }
         }

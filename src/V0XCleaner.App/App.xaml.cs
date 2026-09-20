@@ -47,6 +47,7 @@ public partial class App : Application
                 services.AddSingleton<DuplicateFinderViewModel>();
                 services.AddSingleton<DriveWiperViewModel>();
                 services.AddSingleton<SystemRestoreViewModel>();
+                services.AddSingleton<QuarantineViewModel>();
                 services.AddSingleton<HealthCheckViewModel>();
                 services.AddSingleton<ToolsPageViewModel>();
                 services.AddSingleton<OptionsViewModel>();
@@ -54,10 +55,16 @@ public partial class App : Application
             })
             .Build();
 
+        RegisterGlobalExceptionHandlers();
+
         _host.Start();
 
         var settings = _host.Services.GetRequiredService<ISettingsService>();
         ThemeManager.ApplyTheme(settings.Current.Theme);
+
+        var quarantine = _host.Services.GetRequiredService<IQuarantineService>();
+        var retention = TimeSpan.FromDays(Math.Max(1, settings.Current.QuarantineRetentionDays));
+        _ = Task.Run(() => quarantine.PurgeExpired(retention));
 
         if (e.Args.Contains("--silent") && e.Args.Contains("--clean"))
         {
@@ -88,6 +95,27 @@ public partial class App : Application
         mainWindow.Show();
     }
 
+    private void RegisterGlobalExceptionHandlers()
+    {
+        DispatcherUnhandledException += (_, args) =>
+        {
+            Log.Error(args.Exception, "Exception non gérée (UI).");
+            MessageBox.Show(
+                $"Une erreur inattendue s'est produite :\n{args.Exception.Message}\n\nDétails dans le journal.",
+                "V0X Cleaner", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            Log.Fatal(args.ExceptionObject as Exception, "Exception fatale non gérée.");
+
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Log.Error(args.Exception, "Exception de tâche non observée.");
+            args.SetObserved();
+        };
+    }
+
     private async Task RunSilentCleanAndExitAsync()
     {
         try
@@ -105,7 +133,7 @@ public partial class App : Application
                         await task.Cleaner.CleanAsync(scanResult.Items, OperationMode.Execute);
                     }
                 }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                catch (Exception ex)
                 {
                     logger.LogWarning(ex, "Échec du nettoyage silencieux pour {Key}", task.Key);
                 }

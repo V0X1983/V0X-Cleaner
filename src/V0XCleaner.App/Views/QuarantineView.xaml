@@ -1,0 +1,59 @@
+<UserControl x:Class="V0XCleaner.App.Views.QuarantineView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Corbeille de sécurité" FontSize="24" FontWeight="Bold" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Fichiers supprimés par le Nettoyeur ou les Doublons, restaurables jusqu'à leur purge automatique." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+            <Button Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RefreshCommand}" MinWidth="110" Margin="0,0,12,0" />
+            <Button Content="Tout supprimer définitivement" Padding="12,6" Click="PurgeAllButton_Click" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Entries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:QuarantineEntryViewModel}">
+                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding OriginalPath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding OriginalPath}" />
+                                <TextBlock Grid.Column="1" Text="{Binding FormattedSize}" VerticalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
+                                <TextBlock Grid.Column="2" Text="{Binding FormattedDate}" VerticalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
+                                <Button Grid.Column="3" Content="Restaurer" Padding="8,3" FontSize="11" Margin="0,0,6,0"
+                                        Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" />
+                                <Button Grid.Column="4" Content="Supprimer" Padding="8,3" FontSize="11"
+                                        Command="{Binding DataContext.PurgeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+    </Grid>
+</UserControl>

@@ -81,7 +81,8 @@ public sealed class OrphanedUninstallEntriesScanner : IScanner
                     DisplayPath = $@"{(hivePrefix == "HKLM" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER")}\{subPath}\{subName}",
                     Category = Category,
                     SizeBytes = 0,
-                    Description = $"Désinstalleur fantôme pour \"{displayName}\" (programme déjà supprimé)."
+                    Description = $"Désinstalleur fantôme pour \"{displayName}\" (programme déjà supprimé).",
+                    RequiresElevatedConfirmation = hivePrefix == "HKLM"
                 });
             }
         }

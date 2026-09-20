@@ -45,7 +45,8 @@ public sealed class OrphanedSharedDllsScanner : IScanner
                     DisplayPath = $@"HKEY_LOCAL_MACHINE\{KeyPath}",
                     Category = Category,
                     SizeBytes = 0,
-                    Description = $"Référence à une DLL partagée introuvable : {expanded}"
+                    Description = $"Référence à une DLL partagée introuvable : {expanded}",
+                    RequiresElevatedConfirmation = true
                 });
             }
         }

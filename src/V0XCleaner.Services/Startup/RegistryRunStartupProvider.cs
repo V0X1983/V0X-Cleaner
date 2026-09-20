@@ -57,7 +57,8 @@ internal sealed class RegistryRunStartupProvider : IStartupProvider
                     Command = command,
                     Source = Source,
                     IsEnabled = enabled,
-                    Location = $@"{(hivePrefix == "HKLM" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER")}\{runSubPath}"
+                    Location = $@"{(hivePrefix == "HKLM" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER")}\{runSubPath}",
+                    RequiresElevation = hivePrefix == "HKLM"
                 });
             }
         }

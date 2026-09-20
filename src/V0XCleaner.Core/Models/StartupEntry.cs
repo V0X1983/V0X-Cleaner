@@ -15,4 +15,7 @@ public sealed class StartupEntry
 
     /// <summary>Emplacement d'origine (clé de registre, dossier, chemin de tâche planifiée) pour affichage.</summary>
     public required string Location { get; init; }
+
+    /// <summary>True si la modification de cette entrée nécessite les droits administrateur (HKLM, dossier de démarrage commun...).</summary>
+    public bool RequiresElevation { get; init; }
 }

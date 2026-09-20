@@ -8,7 +8,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ## État actuel (pour reprendre dans une nouvelle conversation)
 
-**Étapes 0 à 6 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 29 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
+**Étapes 0 à 7 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 39 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
 
 Structure : `src/V0XCleaner.Core` (modèles + interfaces, aucune dépendance UI/Windows), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM, interop native), `src/V0XCleaner.App` (WPF, MVVM avec CommunityToolkit.Mvvm, DI via Microsoft.Extensions.DependencyInjection), `tests/V0XCleaner.Tests` (xUnit).
 
@@ -16,7 +16,7 @@ Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outil
 
 **Reporté volontairement depuis l'Étape 6** (à garder en tête, pas forcément à rattraper) : gestion manuelle de priorité de processus (risque/valeur douteux face au Gestionnaire des tâches natif), support multi-langue complet (chantier de traduction de toute l'app, mieux à sa place à l'Étape 8 dédiée à l'UI).
 
-**Prochaine étape à faire : Étape 7** (sécurité, permissions & robustesse — voir plus bas).
+**Prochaine étape à faire : Étape 8** (interface utilisateur & UX finale).
 
 ---
 
@@ -128,7 +128,9 @@ Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outil
 
 ---
 
-## Étape 7 — Sécurité, permissions & robustesse 👉 PROCHAINE ÉTAPE
+## Étape 7 — Sécurité, permissions & robustesse ✅ Terminé
+
+Réalisé : `IElevationService` (détection admin + relance UAC, bouton dans le menu latéral ; manifeste reste asInvoker), drapeaux `RequiresElevatedConfirmation`/`RequiresElevation` (HKLM/HKCR), quarantaine `IQuarantineService` (Undo pour Nettoyeur + Doublons, onglet Outils > Corbeille de sécurité, réglages rétention, purge au démarrage), handlers d'exceptions globaux, 10 nouveaux tests. Le registre garde son Undo via sauvegardes .reg.
 
 - Gérer le manifeste d'élévation UAC (`app.manifest`) — certaines actions nécessitent admin (registre HKLM, services, effacement disque), d'autres non.
 - Ajouter un système de restauration/annulation ("Undo") pour les opérations de nettoyage quand c'est possible (quarantaine temporaire avant suppression définitive).
@@ -166,4 +168,4 @@ Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outil
 
 Dire "on commence l'étape 0" (ou toute autre étape) pour que je génère le code correspondant directement dans ce projet.
 
-**État au 19/09/2026 : Étapes 0 à 6 terminées et committées. Prochaine étape : Étape 7** (dire "on commence l'étape 7" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).
+**État au 20/09/2026 : Étapes 0 à 7 terminées et committées. Prochaine étape : Étape 8** (dire "on commence l'étape 8" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).

@@ -12,6 +12,8 @@ public partial class DuplicateFinderViewModel : ObservableObject
 {
     private readonly IDuplicateFileFinder _finder;
     private readonly IPathGuard _pathGuard;
+    private readonly IQuarantineService _quarantine;
+    private readonly ISettingsService _settings;
     private readonly ILogger<DuplicateFinderViewModel> _logger;
 
     public ObservableCollection<DuplicateGroupViewModel> Groups { get; } = [];
@@ -40,10 +42,12 @@ public partial class DuplicateFinderViewModel : ObservableObject
     [ObservableProperty]
     private bool _canDeleteNow;
 
-    public DuplicateFinderViewModel(IDuplicateFileFinder finder, IPathGuard pathGuard, ILogger<DuplicateFinderViewModel> logger)
+    public DuplicateFinderViewModel(IDuplicateFileFinder finder, IPathGuard pathGuard, IQuarantineService quarantine, ISettingsService settings, ILogger<DuplicateFinderViewModel> logger)
     {
         _finder = finder;
         _pathGuard = pathGuard;
+        _quarantine = quarantine;
+        _settings = settings;
         _logger = logger;
     }
 
@@ -128,7 +132,11 @@ public partial class DuplicateFinderViewModel : ObservableObject
 
                     try
                     {
-                        File.Delete(filePath);
+                        if (!_settings.Current.QuarantineEnabled || _quarantine.Quarantine(filePath) is null)
+                        {
+                            File.Delete(filePath);
+                        }
+
                         deleted++;
                     }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

@@ -59,7 +59,8 @@ public sealed class OrphanedAppPathsScanner : IScanner
                     DisplayPath = $@"{(hivePrefix == "HKLM" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER")}\{SubPath}\{appName}",
                     Category = Category,
                     SizeBytes = 0,
-                    Description = $"Le chemin d'application enregistré pour \"{appName}\" est introuvable : {expanded}"
+                    Description = $"Le chemin d'application enregistré pour \"{appName}\" est introuvable : {expanded}",
+                    RequiresElevatedConfirmation = hivePrefix == "HKLM"
                 });
             }
         }

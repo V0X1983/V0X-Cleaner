@@ -15,4 +15,10 @@ public sealed class AppSettings
     public string UpdateCheckRepo { get; set; } = string.Empty;
 
     public string Theme { get; set; } = "Dark";
+
+    /// <summary>Si vrai, les fichiers supprimés par le Nettoyeur/Doublons sont déplacés en quarantaine au lieu d'être effacés définitivement (voir IQuarantineService).</summary>
+    public bool QuarantineEnabled { get; set; } = true;
+
+    /// <summary>Nombre de jours avant qu'une entrée de quarantaine ne soit purgée automatiquement.</summary>
+    public int QuarantineRetentionDays { get; set; } = 7;
 }

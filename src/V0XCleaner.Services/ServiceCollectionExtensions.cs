@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using V0XCleaner.Core.Abstractions;
 using V0XCleaner.Services.FileSystem;
+using V0XCleaner.Services.Native;
 using V0XCleaner.Services.RegistryCleanup;
 
 namespace V0XCleaner.Services;
@@ -14,6 +15,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddV0XCleanerServices(this IServiceCollection services)
     {
         services.AddSingleton<IPathGuard, PathGuard>();
+        services.AddSingleton<IQuarantineService, QuarantineService>();
+        services.AddSingleton<IElevationService, ElevationService>();
         services.AddSingleton<ICleaningCatalog, CleaningCatalog>();
 
         services.AddSingleton<IRegistryBackupService, RegistryBackupService>();

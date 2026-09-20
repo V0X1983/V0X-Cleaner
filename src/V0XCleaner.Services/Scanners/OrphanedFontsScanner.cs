@@ -49,7 +49,8 @@ public sealed class OrphanedFontsScanner : IScanner
                     DisplayPath = $@"HKEY_LOCAL_MACHINE\{KeyPath}",
                     Category = Category,
                     SizeBytes = 0,
-                    Description = $"La police \"{valueName}\" référence le fichier introuvable : {fileName}"
+                    Description = $"La police \"{valueName}\" référence le fichier introuvable : {fileName}",
+                    RequiresElevatedConfirmation = true
                 });
             }
         }

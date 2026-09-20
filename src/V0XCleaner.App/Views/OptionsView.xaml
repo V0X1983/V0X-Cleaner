@@ -103,6 +103,18 @@
 
                 <Border Style="{StaticResource SectionCardStyle}">
                     <StackPanel>
+                        <TextBlock Text="Corbeille de sécurité" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Mettre les fichiers nettoyés en quarantaine au lieu de les supprimer définitivement"
+                                  IsChecked="{Binding QuarantineEnabled}" Margin="0,0,0,10" />
+                        <StackPanel Orientation="Horizontal" IsEnabled="{Binding QuarantineEnabled}">
+                            <TextBlock Text="Purge automatique après (jours) :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource BrushTextSecondary}" />
+                            <TextBox Text="{Binding QuarantineRetentionDays}" Width="50" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
                         <TextBlock Text="Apparence" Style="{StaticResource SectionTitleStyle}" />
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Thème :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource BrushTextSecondary}" />

@@ -8,9 +8,15 @@ namespace V0XCleaner.Services.Cleaners;
 /// <summary>
 /// Nettoyeur générique pour tout CleanupItem dont le DisplayPath désigne un fichier réel
 /// (cas de la grande majorité des scanners, via PathPatternScanner). Chaque suppression
-/// repasse par IPathGuard et est journalisée individuellement.
+/// repasse par IPathGuard et est journalisée individuellement. Si la quarantaine est activée
+/// (réglage par défaut, voir AppSettings.QuarantineEnabled), le fichier est déplacé vers la
+/// "corbeille de sécurité" plutôt que supprimé définitivement (Étape 7 — Undo).
 /// </summary>
-public sealed class FileDeletionCleaner(IPathGuard pathGuard, ILogger<FileDeletionCleaner> logger) : ICleaner
+public sealed class FileDeletionCleaner(
+    IPathGuard pathGuard,
+    IQuarantineService quarantineService,
+    ISettingsService settingsService,
+    ILogger<FileDeletionCleaner> logger) : ICleaner
 {
     public string Key => "file-deletion";
 
@@ -41,9 +47,11 @@ public sealed class FileDeletionCleaner(IPathGuard pathGuard, ILogger<FileDeleti
                 continue;
             }
 
-            if (FileSystemHelpers.TryDeleteFile(item.DisplayPath, out var error))
+            if (TryRemove(item.DisplayPath, out var error, out var quarantined))
             {
-                logger.LogInformation("Fichier supprimé : {Path} ({Size} octets)", item.DisplayPath, item.SizeBytes);
+                logger.LogInformation(
+                    quarantined ? "Fichier mis en quarantaine : {Path} ({Size} octets)" : "Fichier supprimé : {Path} ({Size} octets)",
+                    item.DisplayPath, item.SizeBytes);
                 succeeded++;
                 freedBytes += item.SizeBytes;
             }
@@ -62,5 +70,18 @@ public sealed class FileDeletionCleaner(IPathGuard pathGuard, ILogger<FileDeleti
             FreedBytes = freedBytes,
             Errors = errors
         });
+    }
+
+    private bool TryRemove(string path, out string? error, out bool quarantined)
+    {
+        if (settingsService.Current.QuarantineEnabled && quarantineService.Quarantine(path) is not null)
+        {
+            error = null;
+            quarantined = true;
+            return true;
+        }
+
+        quarantined = false;
+        return FileSystemHelpers.TryDeleteFile(path, out error);
     }
 }

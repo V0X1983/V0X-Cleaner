@@ -17,7 +17,8 @@ public partial class ToolsPageViewModel : ObservableObject
         new NavigationItem { Key = "disk-analyzer", Title = "Analyseur de disque", Glyph = "" },
         new NavigationItem { Key = "duplicates", Title = "Doublons", Glyph = "" },
         new NavigationItem { Key = "drive-wiper", Title = "Effaceur de disque", Glyph = "" },
-        new NavigationItem { Key = "system-restore", Title = "Restauration système", Glyph = "" }
+        new NavigationItem { Key = "system-restore", Title = "Restauration système", Glyph = "" },
+        new NavigationItem { Key = "quarantine", Title = "Corbeille de sécurité", Glyph = "" }
     ];
 
     [ObservableProperty]
@@ -33,6 +34,7 @@ public partial class ToolsPageViewModel : ObservableObject
     private readonly DuplicateFinderViewModel _duplicateFinderViewModel;
     private readonly DriveWiperViewModel _driveWiperViewModel;
     private readonly SystemRestoreViewModel _systemRestoreViewModel;
+    private readonly QuarantineViewModel _quarantineViewModel;
 
     public ToolsPageViewModel(
         HealthCheckViewModel healthCheckViewModel,
@@ -41,7 +43,8 @@ public partial class ToolsPageViewModel : ObservableObject
         DiskAnalyzerViewModel diskAnalyzerViewModel,
         DuplicateFinderViewModel duplicateFinderViewModel,
         DriveWiperViewModel driveWiperViewModel,
-        SystemRestoreViewModel systemRestoreViewModel)
+        SystemRestoreViewModel systemRestoreViewModel,
+        QuarantineViewModel quarantineViewModel)
     {
         _healthCheckViewModel = healthCheckViewModel;
         _startupManagerViewModel = startupManagerViewModel;
@@ -50,6 +53,7 @@ public partial class ToolsPageViewModel : ObservableObject
         _duplicateFinderViewModel = duplicateFinderViewModel;
         _driveWiperViewModel = driveWiperViewModel;
         _systemRestoreViewModel = systemRestoreViewModel;
+        _quarantineViewModel = quarantineViewModel;
 
         _selectedToolItem = ToolItems[0];
         _currentToolPage = _healthCheckViewModel;
@@ -66,6 +70,7 @@ public partial class ToolsPageViewModel : ObservableObject
             "duplicates" => _duplicateFinderViewModel,
             "drive-wiper" => _driveWiperViewModel,
             "system-restore" => _systemRestoreViewModel,
+            "quarantine" => _quarantineViewModel,
             _ => CurrentToolPage
         };
     }
