@@ -27,8 +27,13 @@ Write-Host "Archive portable : $zip"
 $cmd = Get-Command iscc.exe -ErrorAction SilentlyContinue
 $iscc = if ($cmd) { $cmd.Source } else { $null }
 if (-not $iscc) {
-    $candidate = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-    if (Test-Path $candidate) { $iscc = $candidate }
+    # Inno Setup peut être installé pour tous les utilisateurs (Program Files) ou pour l'utilisateur courant (LocalAppData).
+    $candidates = @(
+        "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+        "${env:ProgramFiles}\Inno Setup 6\ISCC.exe",
+        "${env:LOCALAPPDATA}\Programs\Inno Setup 6\ISCC.exe"
+    )
+    $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 }
 
 if ($iscc) {
