@@ -40,6 +40,12 @@ public sealed class FileDeletionCleaner(
                 continue;
             }
 
+            if (ExclusionMatcher.IsExcluded(item.DisplayPath, settingsService.Current.ExcludedPaths))
+            {
+                logger.LogInformation("Élément exclu par l'utilisateur, ignoré : {Path}", item.DisplayPath);
+                continue;
+            }
+
             if (mode == OperationMode.Simulate)
             {
                 succeeded++;

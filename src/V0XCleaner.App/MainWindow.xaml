@@ -6,11 +6,15 @@
         xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
         xmlns:views="clr-namespace:V0XCleaner.App.Views"
         mc:Ignorable="d"
-        Title="V0X Cleaner" Height="640" Width="1000"
+        Title="V0X Cleaner" Icon="Resources/app.ico" Height="640" Width="1000"
         MinHeight="480" MinWidth="760"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:HomePageViewModel}">
+            <views:HomePageView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:CleanerPageViewModel}">
             <views:CleanerPageView />
         </DataTemplate>
@@ -47,7 +51,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="20,24,20,20">
                     <TextBlock Text="V0X Cleaner" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushAccent}" />
-                    <TextBlock Text="v0.1.0" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
+                    <TextBlock Text="{Binding VersionLabel}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
                 </StackPanel>
 
                 <Border DockPanel.Dock="Bottom" Margin="12,0,12,16" Padding="12,10" CornerRadius="8"

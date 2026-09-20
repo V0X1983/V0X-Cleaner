@@ -8,7 +8,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ## État actuel (pour reprendre dans une nouvelle conversation)
 
-**Étapes 0 à 7 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 39 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
+**Étapes 0 à 8 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 43 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
 
 Structure : `src/V0XCleaner.Core` (modèles + interfaces, aucune dépendance UI/Windows), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM, interop native), `src/V0XCleaner.App` (WPF, MVVM avec CommunityToolkit.Mvvm, DI via Microsoft.Extensions.DependencyInjection), `tests/V0XCleaner.Tests` (xUnit).
 
@@ -16,7 +16,7 @@ Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outil
 
 **Reporté volontairement depuis l'Étape 6** (à garder en tête, pas forcément à rattraper) : gestion manuelle de priorité de processus (risque/valeur douteux face au Gestionnaire des tâches natif), support multi-langue complet (chantier de traduction de toute l'app, mieux à sa place à l'Étape 8 dédiée à l'UI).
 
-**Prochaine étape à faire : Étape 8** (interface utilisateur & UX finale).
+**Prochaine étape à faire : Étape 9** (packaging & distribution). Reporté depuis l'Étape 8 : support multi-langue, splash screen, Mica/Acrylic.
 
 ---
 
@@ -139,7 +139,9 @@ Réalisé : `IElevationService` (détection admin + relance UAC, bouton dans le 
 
 ---
 
-## Étape 8 — Interface utilisateur & UX finale
+## Étape 8 — Interface utilisateur & UX finale ✅ Terminé (multi-langue, splash, Mica reportés)
+
+Réalisé : page Accueil (score santé, espace récupérable, dernier nettoyage, quarantaine), icône d'application/fenêtre/tray, Options (exclusions de nettoyage, lancement avec Windows, À propos), version dynamique.
 
 - Design final façon Fluent/WinUI 3 (ou Material via MaterialDesignInXaml si on reste WPF classique), cohérent avec Windows 11 (coins arrondis, Mica/Acrylic si applicable).
 - Tableau de bord d'accueil avec résumé (espace récupérable, dernier nettoyage, score santé) — **le Bilan de santé (Étape 6) couvre déjà une bonne partie de ce besoin**, à voir si on le déplace/duplique en page d'accueil.
@@ -168,4 +170,4 @@ Réalisé : `IElevationService` (détection admin + relance UAC, bouton dans le 
 
 Dire "on commence l'étape 0" (ou toute autre étape) pour que je génère le code correspondant directement dans ce projet.
 
-**État au 20/09/2026 : Étapes 0 à 7 terminées et committées. Prochaine étape : Étape 8** (dire "on commence l'étape 8" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).
+**État au 20/09/2026 : Étapes 0 à 8 terminées et committées. Prochaine étape : Étape 9** (dire "on commence l'étape 9" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).

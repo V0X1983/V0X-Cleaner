@@ -11,6 +11,7 @@ namespace V0XCleaner.App.ViewModels;
 public partial class CleanerPageViewModel : ObservableObject
 {
     private readonly ILogger<CleanerPageViewModel> _logger;
+    private readonly ISettingsService _settings;
 
     public ObservableCollection<CleaningSectionViewModel> Sections { get; } = [];
 
@@ -35,8 +36,9 @@ public partial class CleanerPageViewModel : ObservableObject
 
     public string FormattedTotalRecoverable => ByteFormatter.Format(TotalRecoverableBytes);
 
-    public CleanerPageViewModel(ICleaningCatalog catalog, ILogger<CleanerPageViewModel> logger)
+    public CleanerPageViewModel(ICleaningCatalog catalog, ISettingsService settings, ILogger<CleanerPageViewModel> logger)
     {
+        _settings = settings;
         _logger = logger;
 
         var taskViewModels = catalog.GetTasks()
@@ -172,6 +174,9 @@ public partial class CleanerPageViewModel : ObservableObject
             if (mode == OperationMode.Execute)
             {
                 HasScanned = false;
+                _settings.Current.LastCleanUtc = DateTime.UtcNow;
+                _settings.Current.LastCleanFreedBytes = freed;
+                await _settings.SaveAsync();
             }
         }
         finally

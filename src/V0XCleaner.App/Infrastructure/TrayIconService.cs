@@ -36,12 +36,18 @@ public sealed class TrayIconService : IDisposable
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = LoadIcon(),
             Text = "V0X Cleaner",
             ContextMenuStrip = menu,
             Visible = false
         };
         _notifyIcon.DoubleClick += (_, _) => ShowMainWindow();
+    }
+
+    private static System.Drawing.Icon LoadIcon()
+    {
+        var stream = Application.GetResourceStream(new Uri("pack://application:,,,/Resources/app.ico"))?.Stream;
+        return stream is null ? System.Drawing.SystemIcons.Application : new System.Drawing.Icon(stream);
     }
 
     /// <summary>À appeler après chaque changement des Options pour (dés)activer l'icône et la surveillance.</summary>

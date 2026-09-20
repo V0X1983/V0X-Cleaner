@@ -39,6 +39,7 @@ public partial class App : Application
 
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<MainWindow>();
+                services.AddSingleton<HomePageViewModel>();
                 services.AddSingleton<CleanerPageViewModel>();
                 services.AddSingleton<RegistryPageViewModel>();
                 services.AddSingleton<StartupManagerViewModel>();

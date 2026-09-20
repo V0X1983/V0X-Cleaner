@@ -21,6 +21,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources/app.ico</ApplicationIcon>
     <AssemblyName>V0XCleaner</AssemblyName>
     <RootNamespace>V0XCleaner.App</RootNamespace>
     <Product>V0X Cleaner</Product>
@@ -29,6 +30,10 @@
     <Version>0.1.0</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources/app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <!--

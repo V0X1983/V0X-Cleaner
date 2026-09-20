@@ -103,6 +103,17 @@
 
                 <Border Style="{StaticResource SectionCardStyle}">
                     <StackPanel>
+                        <TextBlock Text="Général" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Lancer V0X Cleaner à l'ouverture de session Windows" IsChecked="{Binding StartWithWindows}" Margin="0,0,0,12" />
+                        <TextBlock Text="Exclusions (un chemin de fichier ou dossier par ligne, jamais nettoyé) :" FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,6" />
+                        <TextBox Text="{Binding ExcludedPathsText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
+                                 MinHeight="70" MaxHeight="140" VerticalScrollBarVisibility="Auto" Padding="6,4" TextWrapping="NoWrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
                         <TextBlock Text="Corbeille de sécurité" Style="{StaticResource SectionTitleStyle}" />
                         <CheckBox Content="Mettre les fichiers nettoyés en quarantaine au lieu de les supprimer définitivement"
                                   IsChecked="{Binding QuarantineEnabled}" Margin="0,0,0,10" />
@@ -120,6 +131,15 @@
                             <TextBlock Text="Thème :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource BrushTextSecondary}" />
                             <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}" MinWidth="100" />
                         </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="À propos" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="{Binding AboutText}" FontWeight="SemiBold" />
+                        <TextBlock Text="Outil de nettoyage et d'optimisation pour Windows 11." FontSize="12"
+                                   Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 

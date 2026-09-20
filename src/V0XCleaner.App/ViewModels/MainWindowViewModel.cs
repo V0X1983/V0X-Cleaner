@@ -9,6 +9,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public IReadOnlyList<NavigationItem> NavigationItems { get; } =
     [
+        new NavigationItem { Key = "home", Title = "Accueil", Glyph = "" },
         new NavigationItem { Key = "cleaner", Title = "Nettoyeur", Glyph = "" },
         new NavigationItem { Key = "registry", Title = "Registre", Glyph = "" },
         new NavigationItem { Key = "tools", Title = "Outils", Glyph = "" },
@@ -24,6 +25,8 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly Dictionary<string, object> _pageCache = new();
     private readonly IServiceProvider _serviceProvider;
     private readonly IElevationService _elevationService;
+
+    public string VersionLabel { get; } = "v" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.0");
 
     public bool IsElevated => _elevationService.IsElevated;
 
@@ -62,6 +65,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         var page = key switch
         {
+            "home" => (object)_serviceProvider.GetRequiredService<HomePageViewModel>(),
             "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
             "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
             "tools" => (object)_serviceProvider.GetRequiredService<ToolsPageViewModel>(),

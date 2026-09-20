@@ -16,6 +16,14 @@ public sealed class AppSettings
 
     public string Theme { get; set; } = "Dark";
 
+    public DateTime? LastCleanUtc { get; set; }
+    public long LastCleanFreedBytes { get; set; }
+
+    /// <summary>Chemins (fichier ou dossier) jamais nettoyés.</summary>
+    public List<string> ExcludedPaths { get; set; } = [];
+
+    public bool StartWithWindows { get; set; }
+
     /// <summary>Si vrai, les fichiers supprimés par le Nettoyeur/Doublons sont déplacés en quarantaine au lieu d'être effacés définitivement (voir IQuarantineService).</summary>
     public bool QuarantineEnabled { get; set; } = true;
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using V0XCleaner.App.Helpers;
 using V0XCleaner.App.Infrastructure;
 using V0XCleaner.Core.Abstractions;
+using V0XCleaner.Services.Native;
 
 namespace V0XCleaner.App.ViewModels;
 
@@ -55,6 +56,15 @@ public partial class OptionsViewModel : ObservableObject
     private string _selectedTheme;
 
     [ObservableProperty]
+    private string _excludedPathsText;
+
+    [ObservableProperty]
+    private bool _startWithWindows;
+
+    public string AboutText { get; } =
+        "V0X Cleaner v" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.0");
+
+    [ObservableProperty]
     private bool _quarantineEnabled;
 
     [ObservableProperty]
@@ -89,6 +99,8 @@ public partial class OptionsViewModel : ObservableObject
         _updateCheckOwner = current.UpdateCheckOwner;
         _updateCheckRepo = current.UpdateCheckRepo;
         _selectedTheme = current.Theme;
+        _excludedPathsText = string.Join(Environment.NewLine, current.ExcludedPaths);
+        _startWithWindows = current.StartWithWindows;
         _quarantineEnabled = current.QuarantineEnabled;
         _quarantineRetentionDays = current.QuarantineRetentionDays;
     }
@@ -111,6 +123,11 @@ public partial class OptionsViewModel : ObservableObject
             current.UpdateCheckOwner = UpdateCheckOwner;
             current.UpdateCheckRepo = UpdateCheckRepo;
             current.Theme = SelectedTheme;
+            current.ExcludedPaths = ExcludedPathsText
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+            current.StartWithWindows = StartWithWindows;
+            var startupOk = WindowsStartupRegistration.Apply(StartWithWindows);
             current.QuarantineEnabled = QuarantineEnabled;
             current.QuarantineRetentionDays = Math.Max(1, QuarantineRetentionDays);
 
@@ -120,7 +137,9 @@ public partial class OptionsViewModel : ObservableObject
             _trayIconService.ApplySettings();
             ThemeManager.ApplyTheme(SelectedTheme);
 
-            StatusMessage = scheduled
+            StatusMessage = !startupOk
+                ? "Paramètres enregistrés, mais le lancement avec Windows n'a pas pu être configuré."
+                : scheduled
                 ? "Paramètres enregistrés."
                 : "Paramètres enregistrés, mais la planification automatique n'a pas pu être configurée (Planificateur de tâches indisponible).";
         }
