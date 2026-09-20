@@ -6,7 +6,21 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 0 — Cadrage & architecture
+## État actuel (pour reprendre dans une nouvelle conversation)
+
+**Étapes 0 à 6 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 29 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
+
+Structure : `src/V0XCleaner.Core` (modèles + interfaces, aucune dépendance UI/Windows), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM, interop native), `src/V0XCleaner.App` (WPF, MVVM avec CommunityToolkit.Mvvm, DI via Microsoft.Extensions.DependencyInjection), `tests/V0XCleaner.Tests` (xUnit).
+
+Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outils** (sous-onglets : Bilan de santé, Démarrage, Désinstalleur, Analyseur de disque, Doublons, Effaceur de disque, Restauration système — Étapes 3-6), **Options** (nettoyage planifié, surveillance temps réel, mises à jour, thème — Étape 6).
+
+**Reporté volontairement depuis l'Étape 6** (à garder en tête, pas forcément à rattraper) : gestion manuelle de priorité de processus (risque/valeur douteux face au Gestionnaire des tâches natif), support multi-langue complet (chantier de traduction de toute l'app, mieux à sa place à l'Étape 8 dédiée à l'UI).
+
+**Prochaine étape à faire : Étape 7** (sécurité, permissions & robustesse — voir plus bas).
+
+---
+
+## Étape 0 — Cadrage & architecture ✅ Terminé
 
 **Objectif :** poser les fondations du projet avant d'écrire la moindre fonctionnalité.
 
@@ -26,7 +40,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 1 — Module Nettoyage système (cœur du "gratuit")
+## Étape 1 — Module Nettoyage système (cœur du "gratuit") ✅ Terminé
 
 **Objectif :** reproduire l'onglet "Cleaner" de CCleaner.
 
@@ -47,7 +61,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 2 — Nettoyeur de registre
+## Étape 2 — Nettoyeur de registre ✅ Terminé
 
 **Objectif :** reproduire l'onglet "Registry".
 
@@ -60,7 +74,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 3 — Gestionnaire de démarrage & processus
+## Étape 3 — Gestionnaire de démarrage & processus ✅ Terminé
 
 **Objectif :** reproduire "Startup" / "Tools > Startup".
 
@@ -72,7 +86,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 4 — Désinstalleur de logiciels
+## Étape 4 — Désinstalleur de logiciels ✅ Terminé
 
 **Objectif :** reproduire "Tools > Uninstall".
 
@@ -84,7 +98,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 5 — Outils système avancés
+## Étape 5 — Outils système avancés ✅ Terminé (récupération de fichiers non implémentée, cf. note)
 
 **Objectif :** reproduire les autres sous-outils.
 
@@ -98,7 +112,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 6 — Fonctionnalités "Pro/Professional" (équivalent payant)
+## Étape 6 — Fonctionnalités "Pro/Professional" (équivalent payant) ✅ Terminé (voir notes de scope)
 
 **Objectif :** couvrir ce qui est habituellement derrière la licence payante.
 
@@ -114,7 +128,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ---
 
-## Étape 7 — Sécurité, permissions & robustesse
+## Étape 7 — Sécurité, permissions & robustesse 👉 PROCHAINE ÉTAPE
 
 - Gérer le manifeste d'élévation UAC (`app.manifest`) — certaines actions nécessitent admin (registre HKLM, services, effacement disque), d'autres non.
 - Ajouter un système de restauration/annulation ("Undo") pour les opérations de nettoyage quand c'est possible (quarantaine temporaire avant suppression définitive).
@@ -126,8 +140,8 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 ## Étape 8 — Interface utilisateur & UX finale
 
 - Design final façon Fluent/WinUI 3 (ou Material via MaterialDesignInXaml si on reste WPF classique), cohérent avec Windows 11 (coins arrondis, Mica/Acrylic si applicable).
-- Tableau de bord d'accueil avec résumé (espace récupérable, dernier nettoyage, score santé).
-- Écran "Options" complet (exclusions, langue, démarrage avec Windows, thème, planification).
+- Tableau de bord d'accueil avec résumé (espace récupérable, dernier nettoyage, score santé) — **le Bilan de santé (Étape 6) couvre déjà une bonne partie de ce besoin**, à voir si on le déplace/duplique en page d'accueil.
+- Écran "Options" : nettoyage planifié, surveillance, mises à jour, thème **déjà faits (Étape 6)** ; reste à ajouter : exclusions de nettoyage, démarrage de l'app avec Windows, et le support multi-langue (reporté depuis l'Étape 6, gros chantier de traduction).
 - Icône, splash screen, nom de l'application "V0X Cleaner" partout (About, installeur, raccourcis).
 
 ---
@@ -151,3 +165,5 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 ## Prochaine action
 
 Dire "on commence l'étape 0" (ou toute autre étape) pour que je génère le code correspondant directement dans ce projet.
+
+**État au 19/09/2026 : Étapes 0 à 6 terminées et committées. Prochaine étape : Étape 7** (dire "on commence l'étape 7" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).
