@@ -11,8 +11,12 @@ public sealed class AppSettings
     public int MonitoringIntervalMinutes { get; set; } = 60;
     public long MonitoringThresholdBytes { get; set; } = 500L * 1024 * 1024;
 
-    public string UpdateCheckOwner { get; set; } = string.Empty;
-    public string UpdateCheckRepo { get; set; } = string.Empty;
+    /// <summary>Dépôt GitHub Releases vérifié pour les mises à jour ; les valeurs vides retombent sur le dépôt officiel.</summary>
+    public const string DefaultUpdateOwner = "v0x83";
+    public const string DefaultUpdateRepo = "V0X-Cleaner";
+
+    public string UpdateCheckOwner { get; set; } = DefaultUpdateOwner;
+    public string UpdateCheckRepo { get; set; } = DefaultUpdateRepo;
 
     public string Theme { get; set; } = "Dark";
 

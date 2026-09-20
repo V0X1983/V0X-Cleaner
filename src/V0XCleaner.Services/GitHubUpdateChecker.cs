@@ -6,9 +6,9 @@ using V0XCleaner.Core.Models;
 namespace V0XCleaner.Services;
 
 /// <summary>
-/// Vérifie la dernière publication GitHub Releases d'un dépôt configuré par l'utilisateur dans
-/// les Options (aucun dépôt n'est configuré par défaut : cette fonctionnalité ne contacte jamais
-/// de serveur tant que l'utilisateur n'a pas renseigné un propriétaire/dépôt lui-même).
+/// Vérifie la dernière publication GitHub Releases du dépôt configuré dans les Options (par défaut
+/// le dépôt officiel, voir <see cref="AppSettings.DefaultUpdateOwner"/>). La vérification n'a lieu
+/// que lorsque l'utilisateur la demande.
 /// </summary>
 public sealed class GitHubUpdateChecker : IUpdateChecker
 {
@@ -29,6 +29,11 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
             using var response = await Http.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return new LatestReleaseInfo(false, null, null, "Aucune version publiée pour le moment sur le dépôt de mise à jour.");
+                }
+
                 return new LatestReleaseInfo(false, null, null, $"Impossible de vérifier les mises à jour (code {(int)response.StatusCode}).");
             }
 

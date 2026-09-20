@@ -80,7 +80,7 @@
                 <Border Style="{StaticResource SectionCardStyle}">
                     <StackPanel>
                         <TextBlock Text="Mises à jour" Style="{StaticResource SectionTitleStyle}" />
-                        <TextBlock Text="Dépôt GitHub Releases à vérifier (laisser vide pour désactiver) :" FontSize="12"
+                        <TextBlock Text="Dépôt GitHub Releases à vérifier (vide = dépôt officiel v0x83/V0X-Cleaner) :" FontSize="12"
                                    Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,0,6" />
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>

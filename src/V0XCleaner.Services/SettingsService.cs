@@ -46,6 +46,13 @@ public sealed class SettingsService : ISettingsService
                 var settings = JsonSerializer.Deserialize<AppSettings>(json);
                 if (settings is not null)
                 {
+                    // Les anciennes configurations enregistraient un dépôt vide : on le remplace par le dépôt officiel.
+                    if (string.IsNullOrWhiteSpace(settings.UpdateCheckOwner) || string.IsNullOrWhiteSpace(settings.UpdateCheckRepo))
+                    {
+                        settings.UpdateCheckOwner = AppSettings.DefaultUpdateOwner;
+                        settings.UpdateCheckRepo = AppSettings.DefaultUpdateRepo;
+                    }
+
                     return settings;
                 }
             }
