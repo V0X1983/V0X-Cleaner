@@ -151,57 +151,73 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
         }
     }
 
-    public int PurgeExpired(TimeSpan retention)
+    public int PurgeExpired(TimeSpan retention, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         lock (_lock)
         {
             var entries = LoadIndex();
             var cutoff = DateTime.UtcNow - retention;
-            var expired = entries.Where(e => e.QuarantinedAtUtc < cutoff).ToList();
+            var expired = entries.Where(e => e.QuarantinedAtUtc <= cutoff).ToList();
+            var orphanNames = FindOrphanFolders(entries, cutoff);
+            var total = Math.Max(1, expired.Count + orphanNames.Count);
+            var done = 0;
+            var removedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var entry in expired)
+            try
             {
-                TryDeleteEntryFolder(entry.Id);
-                entries.Remove(entry);
+                foreach (var entry in expired)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    TryDeleteEntryFolder(entry.Id);
+                    removedIds.Add(entry.Id);
+                    done++;
+                    progress?.Report(done * 100.0 / total);
+                }
+
+                foreach (var name in orphanNames)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    TryDeleteEntryFolder(name);
+                    done++;
+                    progress?.Report(done * 100.0 / total);
+                }
+            }
+            finally
+            {
+                if (removedIds.Count > 0)
+                {
+                    entries.RemoveAll(e => removedIds.Contains(e.Id));
+                    SaveIndex(entries);
+                    logger.LogInformation("{Count} élément(s) purgé(s) de la quarantaine.", removedIds.Count);
+                }
             }
 
-            var orphans = DeleteOrphanFolders(entries, cutoff);
-
-            if (expired.Count > 0)
-            {
-                SaveIndex(entries);
-                logger.LogInformation("{Count} élément(s) purgé(s) de la quarantaine (rétention dépassée).", expired.Count);
-            }
-
-            return expired.Count + orphans;
+            return done;
         }
     }
 
-    /// <summary>Supprime les sous-dossiers de quarantaine absents de l'index (restes d'une opération interrompue) plus vieux que la rétention.</summary>
-    private int DeleteOrphanFolders(List<QuarantineEntry> entries, DateTime cutoffUtc)
+    /// <summary>Sous-dossiers de quarantaine absents de l'index (restes d'une opération interrompue) plus vieux que la rétention.</summary>
+    private List<string> FindOrphanFolders(List<QuarantineEntry> entries, DateTime cutoffUtc)
     {
-        var deleted = 0;
+        var orphans = new List<string>();
         try
         {
             var known = entries.Select(e => e.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var folder in Directory.EnumerateDirectories(Root))
             {
                 var name = Path.GetFileName(folder);
-                if (known.Contains(name) || Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
+                if (!known.Contains(name) && Directory.GetCreationTimeUtc(folder) <= cutoffUtc)
                 {
-                    continue;
+                    orphans.Add(name);
                 }
-
-                TryDeleteEntryFolder(name);
-                deleted++;
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            logger.LogWarning(ex, "Échec du nettoyage des dossiers de quarantaine orphelins.");
+            logger.LogWarning(ex, "Échec de l'énumération des dossiers de quarantaine orphelins.");
         }
 
-        return deleted;
+        return orphans;
     }
 
     private void TryDeleteEntryFolder(string id)

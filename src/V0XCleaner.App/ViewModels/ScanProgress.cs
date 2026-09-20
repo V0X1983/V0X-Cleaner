@@ -15,6 +15,9 @@ public partial class ScanProgress : ObservableObject
     private string _message = string.Empty;
 
     [ObservableProperty]
+    private bool _canStop = true;
+
+    [ObservableProperty]
     private string _stopLabel = "Arrêter l'analyse";
 
     /// <summary>Pourcentage 0-100, ou -1 quand la durée est inconnue (anneau animé sans chiffre).</summary>

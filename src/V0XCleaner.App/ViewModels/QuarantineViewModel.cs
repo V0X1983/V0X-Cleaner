@@ -12,6 +12,8 @@ public partial class QuarantineViewModel : ObservableObject
 
     private const int MaxDisplayed = 300;
 
+    public ScanProgress Loading { get; } = new();
+
     public ObservableCollection<QuarantineEntryViewModel> Entries { get; } = [];
 
     [ObservableProperty]
@@ -71,8 +73,24 @@ public partial class QuarantineViewModel : ObservableObject
     [RelayCommand]
     private async Task PurgeAllAsync()
     {
-        StatusMessage = "Suppression en cours...";
-        await Task.Run(() => _quarantine.PurgeExpired(TimeSpan.Zero));
+        var ct = Loading.Begin("Suppression définitive en cours...", "Arrêter la suppression");
+        try
+        {
+            var progress = new Progress<double>(percent => Loading.Progress = percent);
+            var deleted = await Task.Run(() => _quarantine.PurgeExpired(TimeSpan.Zero, progress, ct), ct);
+            StatusMessage = $"{deleted} élément(s) supprimé(s) définitivement.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Suppression arrêtée.";
+        }
+        finally
+        {
+            Loading.End();
+        }
+
+        var summary = StatusMessage;
         Refresh();
+        StatusMessage = summary;
     }
 }

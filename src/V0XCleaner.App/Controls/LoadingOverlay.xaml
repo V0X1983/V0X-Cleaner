@@ -21,7 +21,8 @@
             <TextBlock Text="{Binding Message}" FontSize="20" FontWeight="SemiBold" TextAlignment="Center"
                        TextWrapping="Wrap" MaxWidth="520" Margin="0,28,0,24" />
 
-            <Button Content="{Binding StopLabel}" Command="{Binding StopCommand}" HorizontalAlignment="Center" Padding="26,10" />
+            <Button Content="{Binding StopLabel}" Command="{Binding StopCommand}" HorizontalAlignment="Center" Padding="26,10"
+                    Visibility="{Binding CanStop, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </StackPanel>
     </Grid>
 </UserControl>

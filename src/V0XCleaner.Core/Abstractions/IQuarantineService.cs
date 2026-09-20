@@ -26,5 +26,5 @@ public interface IQuarantineService
     bool PurgeEntry(string entryId);
 
     /// <summary>Supprime définitivement toutes les entrées plus vieilles que <paramref name="retention"/>. Retourne le nombre d'entrées purgées.</summary>
-    int PurgeExpired(TimeSpan retention);
+    int PurgeExpired(TimeSpan retention, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
 }
