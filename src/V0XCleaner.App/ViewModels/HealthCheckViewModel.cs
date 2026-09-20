@@ -80,21 +80,32 @@ public partial class HealthCheckViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = "Nettoyage rapide en cours...";
+        var ct = Loading.Begin("Nettoyage rapide en cours...", "Arrêter le nettoyage");
 
         try
         {
             long freed = 0;
-            foreach (var task in _cleaningCatalog.GetTasks().Where(t => t.SelectedByDefault && t.Section == CleaningSection.System))
+            var tasks = _cleaningCatalog.GetTasks().Where(t => t.SelectedByDefault && t.Section == CleaningSection.System).ToList();
+            var done = 0;
+            foreach (var task in tasks)
             {
-                var scan = await Task.Run(() => task.Scanner.ScanAsync());
+                Loading.Message = $"Nettoyage : {task.DisplayName}";
+                var scan = await Task.Run(() => task.Scanner.ScanAsync(ct), ct);
                 if (scan.Items.Count > 0)
                 {
-                    var result = await Task.Run(() => task.Cleaner.CleanAsync(scan.Items, OperationMode.Execute));
+                    var result = await Task.Run(() => task.Cleaner.CleanAsync(scan.Items, OperationMode.Execute, ct), ct);
                     freed += result.FreedBytes;
                 }
+
+                done++;
+                Loading.Progress = done * 100.0 / tasks.Count;
             }
 
             StatusMessage = $"Nettoyage rapide terminé : {ByteFormatter.Format(freed)} libérés.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Nettoyage arrêté.";
         }
         catch (Exception ex)
         {
@@ -103,6 +114,7 @@ public partial class HealthCheckViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
 
@@ -114,11 +126,16 @@ public partial class HealthCheckViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = "Libération de la mémoire en cours...";
+        var ct = Loading.Begin("Libération de la mémoire en cours...", "Arrêter");
 
         try
         {
-            var result = await Task.Run(() => _memoryOptimizer.FreeMemoryAsync());
+            var result = await Task.Run(() => _memoryOptimizer.FreeMemoryAsync(ct), ct);
             StatusMessage = $"{result.ProcessesTrimmed} processus optimisé(s), environ {ByteFormatter.Format(result.EstimatedBytesFreed)} libérés.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Libération de la mémoire arrêtée.";
         }
         catch (Exception ex)
         {
@@ -127,6 +144,7 @@ public partial class HealthCheckViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
