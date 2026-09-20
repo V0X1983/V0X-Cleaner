@@ -9,7 +9,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     public IReadOnlyList<NavigationItem> NavigationItems { get; } =
     [
-        new NavigationItem { Key = "home", Title = "Accueil", Glyph = "" },
+        new NavigationItem { Key = "health-check", Title = "Bilan de santé", Glyph = "" },
         new NavigationItem { Key = "cleaner", Title = "Nettoyeur", Glyph = "" },
         new NavigationItem { Key = "registry", Title = "Registre", Glyph = "" },
         new NavigationItem { Key = "tools", Title = "Outils", Glyph = "" },
@@ -66,7 +66,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         var page = key switch
         {
-            "home" => (object)_serviceProvider.GetRequiredService<HomePageViewModel>(),
+            "health-check" => (object)_serviceProvider.GetRequiredService<HealthCheckViewModel>(),
             "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
             "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
             "tools" => (object)_serviceProvider.GetRequiredService<ToolsPageViewModel>(),

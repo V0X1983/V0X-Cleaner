@@ -7,10 +7,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <DataTemplate DataType="{x:Type vm:HealthCheckViewModel}">
-            <views:HealthCheckView />
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type vm:StartupManagerViewModel}">
             <views:StartupManagerView />
         </DataTemplate>

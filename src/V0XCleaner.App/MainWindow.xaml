@@ -11,8 +11,8 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:HomePageViewModel}">
-            <views:HomePageView />
+        <DataTemplate DataType="{x:Type vm:HealthCheckViewModel}">
+            <views:HealthCheckView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:CleanerPageViewModel}">
