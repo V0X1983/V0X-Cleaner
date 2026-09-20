@@ -11,3 +11,4 @@ obj/
 ## Rider/VSCode
 .idea/
 .vscode/
+artifacts/

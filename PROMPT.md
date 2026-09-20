@@ -8,7 +8,7 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ## État actuel (pour reprendre dans une nouvelle conversation)
 
-**Étapes 0 à 8 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 43 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
+**Étapes 0 à 9 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 43 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
 
 Structure : `src/V0XCleaner.Core` (modèles + interfaces, aucune dépendance UI/Windows), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM, interop native), `src/V0XCleaner.App` (WPF, MVVM avec CommunityToolkit.Mvvm, DI via Microsoft.Extensions.DependencyInjection), `tests/V0XCleaner.Tests` (xUnit).
 
@@ -16,7 +16,7 @@ Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outil
 
 **Reporté volontairement depuis l'Étape 6** (à garder en tête, pas forcément à rattraper) : gestion manuelle de priorité de processus (risque/valeur douteux face au Gestionnaire des tâches natif), support multi-langue complet (chantier de traduction de toute l'app, mieux à sa place à l'Étape 8 dédiée à l'UI).
 
-**Prochaine étape à faire : Étape 9** (packaging & distribution). Reporté depuis l'Étape 8 : support multi-langue, splash screen, Mica/Acrylic.
+**Feuille de route terminée.** Restent à faire hors roadmap : compiler l'installeur (installer Inno Setup 6), signature de code, multi-langue. Reporté depuis l'Étape 8 : support multi-langue, splash screen, Mica/Acrylic.
 
 ---
 
@@ -150,7 +150,9 @@ Réalisé : page Accueil (score santé, espace récupérable, dernier nettoyage,
 
 ---
 
-## Étape 9 — Packaging & distribution
+## Étape 9 — Packaging & distribution ✅ Terminé (installeur non compilé : Inno Setup absent)
+
+Réalisé : `installeruild.ps1` (publish self-contained + zip portable + compilation Inno si dispo), `installer\V0XCleaner.iss`, README, CHANGELOG.
 
 - Créer un installeur (Inno Setup ou WiX Toolset) : raccourcis, désinstallation propre, icône, signature de code (si certificat disponible).
 - Générer un exécutable self-contained ou dépendant du runtime .NET selon la cible.
@@ -170,4 +172,4 @@ Réalisé : page Accueil (score santé, espace récupérable, dernier nettoyage,
 
 Dire "on commence l'étape 0" (ou toute autre étape) pour que je génère le code correspondant directement dans ce projet.
 
-**État au 20/09/2026 : Étapes 0 à 8 terminées et committées. Prochaine étape : Étape 9** (dire "on commence l'étape 9" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).
+**État au 20/09/2026 : Étapes 0 à 8 terminées et committées. Feuille de route terminée** (dire "on commence l'étape 9" dans une nouvelle conversation — ce fichier + `git log` suffisent à reprendre le contexte sans relire tout l'historique de conversation).
