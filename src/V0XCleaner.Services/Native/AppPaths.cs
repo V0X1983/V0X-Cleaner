@@ -1,4 +1,4 @@
-namespace V0XCleaner.Services.System;
+namespace V0XCleaner.Services.Native;
 
 /// <summary>Emplacements disque standard de l'application, centralisés pour éviter les chemins en dur.</summary>
 public static class AppPaths

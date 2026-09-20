@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using V0XCleaner.Core.Abstractions;
+using V0XCleaner.Services.FileSystem;
 
 namespace V0XCleaner.Services;
 
@@ -10,8 +12,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddV0XCleanerServices(this IServiceCollection services)
     {
-        // Les scanners/cleaners concrets seront enregistrés ici au fil des étapes
-        // (Étape 1 : nettoyage système, Étape 2 : registre, etc.).
+        services.AddSingleton<IPathGuard, PathGuard>();
+        services.AddSingleton<ICleaningCatalog, CleaningCatalog>();
+
         return services;
     }
 }

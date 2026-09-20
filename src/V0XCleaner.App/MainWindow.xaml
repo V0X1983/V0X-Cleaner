@@ -4,12 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
+        xmlns:views="clr-namespace:V0XCleaner.App.Views"
         mc:Ignorable="d"
         Title="V0X Cleaner" Height="640" Width="1000"
         MinHeight="480" MinWidth="760"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:CleanerPageViewModel}">
+            <views:CleanerPageView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}">
             <StackPanel Margin="32" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="560">
                 <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" Margin="0,0,0,12" />

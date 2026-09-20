@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace V0XCleaner.App.ViewModels;
 
@@ -20,9 +21,11 @@ public partial class MainWindowViewModel : ObservableObject
     private object _currentPage;
 
     private readonly Dictionary<string, object> _pageCache = new();
+    private readonly IServiceProvider _serviceProvider;
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(IServiceProvider serviceProvider)
     {
+        _serviceProvider = serviceProvider;
         _selectedNavigationItem = NavigationItems[0];
         _currentPage = GetOrCreatePage(_selectedNavigationItem.Key);
     }
@@ -41,11 +44,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         var page = key switch
         {
-            "cleaner" => new PlaceholderPageViewModel
-            {
-                Title = "Nettoyeur",
-                Description = "Le module de nettoyage système (fichiers temporaires, navigateurs, applications tierces) arrive à l'Étape 1."
-            },
+            "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
             "registry" => new PlaceholderPageViewModel
             {
                 Title = "Registre",

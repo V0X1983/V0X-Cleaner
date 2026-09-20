@@ -17,6 +17,8 @@ public enum CleanupCategory
     BrowserHistory,
     BrowserDownloadsHistory,
     BrowserFormData,
+    BrowserSessions,
+    DnsCache,
     ThirdPartyApplication,
     Registry,
     Startup,

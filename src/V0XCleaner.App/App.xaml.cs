@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using V0XCleaner.App.ViewModels;
 using V0XCleaner.Services;
-using V0XCleaner.Services.System;
+using V0XCleaner.Services.Native;
 
 namespace V0XCleaner.App;
 
@@ -33,6 +33,7 @@ public partial class App : Application
 
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<MainWindow>();
+                services.AddSingleton<CleanerPageViewModel>();
             })
             .Build();
 

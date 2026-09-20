@@ -1,0 +1,77 @@
+[
+  {
+    "key": "office-cache",
+    "displayName": "Cache Microsoft Office",
+    "description": "Fichiers temporaires et cache de Microsoft Office (Word, Excel, PowerPoint).",
+    "patterns": [
+      "%LocalAppData%\\Microsoft\\Office\\*\\OfficeFileCache",
+      "%LocalAppData%\\Microsoft\\Office\\UnsavedFiles",
+      "%Temp%\\PowerPoint Temp"
+    ]
+  },
+  {
+    "key": "adobe-reader-cache",
+    "displayName": "Cache Adobe Acrobat Reader",
+    "description": "Cache de rendu et de navigation d'Adobe Acrobat Reader DC.",
+    "patterns": [
+      "%AppData%\\Adobe\\Acrobat\\*\\Cache",
+      "%LocalAppData%\\Adobe\\Acrobat\\*\\Cache"
+    ]
+  },
+  {
+    "key": "thunderbird-cache",
+    "displayName": "Cache Mozilla Thunderbird",
+    "description": "Cache HTTP/images de Thunderbird (ne touche pas aux emails ni aux dossiers locaux).",
+    "patterns": [
+      "%LocalAppData%\\Thunderbird\\Profiles\\*\\cache2"
+    ]
+  },
+  {
+    "key": "vscode-cache",
+    "displayName": "Cache Visual Studio Code",
+    "description": "Cache de rendu et de compilation de Visual Studio Code.",
+    "patterns": [
+      "%AppData%\\Code\\Cache",
+      "%AppData%\\Code\\CachedData",
+      "%AppData%\\Code\\Code Cache",
+      "%AppData%\\Code\\GPUCache"
+    ]
+  },
+  {
+    "key": "discord-cache",
+    "displayName": "Cache Discord",
+    "description": "Cache de rendu et de médias de Discord.",
+    "patterns": [
+      "%AppData%\\discord\\Cache",
+      "%AppData%\\discord\\Code Cache",
+      "%AppData%\\discord\\GPUCache"
+    ]
+  },
+  {
+    "key": "spotify-cache",
+    "displayName": "Cache Spotify",
+    "description": "Cache audio et données temporaires de Spotify.",
+    "patterns": [
+      "%LocalAppData%\\Spotify\\Storage",
+      "%LocalAppData%\\Spotify\\Data"
+    ]
+  },
+  {
+    "key": "npm-cache",
+    "displayName": "Cache npm",
+    "description": "Cache des paquets téléchargés par le gestionnaire npm (Node.js).",
+    "patterns": [
+      "%AppData%\\npm-cache\\_cacache"
+    ],
+    "selectedByDefault": false
+  },
+  {
+    "key": "pip-cache",
+    "displayName": "Cache pip",
+    "description": "Cache des paquets téléchargés par le gestionnaire pip (Python).",
+    "patterns": [
+      "%LocalAppData%\\pip\\Cache"
+    ],
+    "selectedByDefault": false
+  }
+]
