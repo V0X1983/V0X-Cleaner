@@ -137,6 +137,9 @@ public partial class RegistryPageViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = SimulationMode ? "Simulation en cours..." : "Sauvegarde puis réparation en cours...";
+        var ct = Loading.Begin(StatusMessage, "Arrêter la réparation");
+        var toRepair = Math.Max(1, AllTasks.Count(t => t.IsSelected && t.LastScanItems.Count > 0));
+        var processed = 0;
 
         try
         {
@@ -152,9 +155,13 @@ public partial class RegistryPageViewModel : ObservableObject
                 }
 
                 taskVm.Status = CleaningTaskStatus.Cleaning;
+                Loading.Message = $"Réparation : {taskVm.Task.DisplayName}";
                 try
                 {
-                    var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode));
+                    ct.ThrowIfCancellationRequested();
+                    var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode, ct), ct);
+                    processed++;
+                    Loading.Progress = processed * 100.0 / toRepair;
                     repaired += result.SucceededCount;
                     failedCount += result.FailedCount;
 
@@ -170,6 +177,11 @@ public partial class RegistryPageViewModel : ObservableObject
 
                     taskVm.Status = finalStatus;
                     taskVm.LastError = finalError;
+                }
+                catch (OperationCanceledException)
+                {
+                    taskVm.Status = CleaningTaskStatus.Scanned;
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -191,8 +203,14 @@ public partial class RegistryPageViewModel : ObservableObject
                 RefreshBackups();
             }
         }
+        catch (OperationCanceledException)
+        {
+            RecomputeTotal();
+            StatusMessage = "Réparation arrêtée.";
+        }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
