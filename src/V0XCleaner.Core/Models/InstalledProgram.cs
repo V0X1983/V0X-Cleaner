@@ -19,6 +19,9 @@ public sealed class InstalledProgram
 
     public string? InstallLocation { get; init; }
 
+    /// <summary>Fichier (exe, dll ou ico) dont on peut extraire l'icône du programme, si connu.</summary>
+    public string? IconPath { get; init; }
+
     /// <summary>False pour les paquets système protégés (ex: NonRemovable côté UWP).</summary>
     public bool CanUninstall { get; init; } = true;
 }

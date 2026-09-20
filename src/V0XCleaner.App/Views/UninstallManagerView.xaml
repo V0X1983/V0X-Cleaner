@@ -22,9 +22,9 @@
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="260" />
-                <ColumnDefinition Width="220" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" MinWidth="120" />
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -43,36 +43,46 @@
                     Margin="12,0,0,0" Padding="14,6" />
         </Grid>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding DisplayedPrograms}" IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding DisplayName}" Width="2*" />
-                <DataGridTextColumn Header="Version" Binding="{Binding DisplayVersion}" Width="*" />
-                <DataGridTextColumn Header="Éditeur" Binding="{Binding Publisher}" Width="1.5*" />
-                <DataGridTextColumn Header="Taille" Binding="{Binding FormattedSize}" Width="90" />
-                <DataGridTextColumn Header="Installé le" Binding="{Binding FormattedInstallDate}" Width="100" />
-                <DataGridTextColumn Header="Type" Binding="{Binding KindLabel}" Width="140" />
-                <DataGridTemplateColumn Header="Actions" Width="230">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate DataType="{x:Type vm:InstalledProgramViewModel}">
-                            <StackPanel Margin="4">
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Désinstaller" Padding="8,3" FontSize="11" Margin="0,0,6,0"
-                                            IsEnabled="{Binding CanUninstall}"
-                                            Click="UninstallButton_Click" Tag="{Binding}" />
-                                    <Button Content="Forcer" Padding="8,3" FontSize="11"
-                                            ToolTip="Supprimer directement le dossier et l'entrée de registre, sans lancer le désinstalleur"
-                                            Visibility="{Binding IsWin32, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            Click="ForceRemoveButton_Click" Tag="{Binding}" />
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding DisplayedPrograms}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:InstalledProgramViewModel}">
+                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10"
+                                Loaded="ProgramRow_Loaded">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Désinstaller" Padding="8,3" FontSize="11" Margin="0,0,6,0"
+                                                IsEnabled="{Binding CanUninstall}" Click="UninstallButton_Click" Tag="{Binding}" />
+                                        <Button Content="Forcer" Padding="8,3" FontSize="11"
+                                                ToolTip="Supprimer directement le dossier et l'entrée de registre, sans lancer le désinstalleur"
+                                                Visibility="{Binding IsWin32, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Click="ForceRemoveButton_Click" Tag="{Binding}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding StatusMessage}" FontSize="10" TextWrapping="Wrap" Margin="0,3,0,0" MaxWidth="200"
+                                               Foreground="{StaticResource BrushTextSecondary}"
+                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding StatusMessage}" FontSize="10" TextWrapping="Wrap" Margin="0,3,0,0"
-                                           Foreground="{StaticResource BrushTextSecondary}"
-                                           Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding FormattedSize}" VerticalAlignment="Center" Width="80" TextAlignment="Right"
+                                           Foreground="{StaticResource BrushAccent}" />
+                                <Grid DockPanel.Dock="Left" Width="36" Height="36" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <Border Background="{StaticResource BrushSurfaceAlt}" CornerRadius="8">
+                                        <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource BrushTextSecondary}" />
+                                    </Border>
+                                    <Image Source="{Binding Icon}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}" />
+                                    <TextBlock Text="{Binding DetailsLine}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                               Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
 
         <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
     </Grid>

@@ -14,6 +14,14 @@ public partial class UninstallManagerView : UserControl
         InitializeComponent();
     }
 
+    private async void ProgramRow_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: InstalledProgramViewModel program } && program.Icon is null)
+        {
+            await program.LoadIconAsync();
+        }
+    }
+
     private async void UninstallButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: InstalledProgramViewModel programVm } || DataContext is not UninstallManagerViewModel viewModel)

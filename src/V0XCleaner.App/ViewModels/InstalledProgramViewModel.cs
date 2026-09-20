@@ -20,6 +20,48 @@ public partial class InstalledProgramViewModel(InstalledProgram program) : Obser
 
     public string KindLabel => Program.Kind == InstalledProgramKind.Win32 ? "Application" : "App Microsoft Store";
 
+    public string DetailsLine => string.Join("  ·  ", new[]
+    {
+        Program.Publisher,
+        Program.DisplayVersion is { } version ? "v" + version : null,
+        Program.InstallDate?.ToString("dd/MM/yyyy"),
+        KindLabel
+    }.Where(part => !string.IsNullOrWhiteSpace(part)));
+
+    public string Initial => DisplayName.Length > 0 ? DisplayName[..1].ToUpperInvariant() : "?";
+
+    [ObservableProperty]
+    private System.Windows.Media.ImageSource? _icon;
+
+    public async Task LoadIconAsync()
+    {
+        if (Program.IconPath is not { } path)
+        {
+            return;
+        }
+
+        Icon = await Task.Run(() =>
+        {
+            try
+            {
+                using var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+                if (icon is null)
+                {
+                    return null;
+                }
+
+                var source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                    icon.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                source.Freeze();
+                return (System.Windows.Media.ImageSource)source;
+            }
+            catch (Exception ex) when (ex is ArgumentException or System.ComponentModel.Win32Exception or System.IO.IOException or NotSupportedException)
+            {
+                return null;
+            }
+        });
+    }
+
     public bool CanUninstall => Program.CanUninstall;
 
     public bool IsWin32 => Program.Kind == InstalledProgramKind.Win32;

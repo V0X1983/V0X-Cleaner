@@ -180,12 +180,49 @@ public sealed class InstalledProgramsCatalog(
                     UninstallCommand = RegistrySafe.GetValue(subKey, "UninstallString") as string,
                     QuietUninstallCommand = RegistrySafe.GetValue(subKey, "QuietUninstallString") as string,
                     InstallLocation = RegistrySafe.GetValue(subKey, "InstallLocation") as string,
+                    IconPath = ResolveIconPath(RegistrySafe.GetValue(subKey, "DisplayIcon") as string,
+                        RegistrySafe.GetValue(subKey, "UninstallString") as string),
                     CanUninstall = true
                 });
             }
         }
 
         return programs;
+    }
+
+    /// <summary>Extrait un chemin de fichier exploitable depuis DisplayIcon ("C:\\x.exe,0", entre guillemets...) ou, à défaut, UninstallString.</summary>
+    internal static string? ResolveIconPath(string? displayIcon, string? uninstallString)
+    {
+        foreach (var raw in new[] { displayIcon, uninstallString })
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                continue;
+            }
+
+            var text = raw.Trim();
+            string path;
+            if (text[0] == '"')
+            {
+                var end = text.IndexOf('"', 1);
+                path = end > 1 ? text[1..end] : text.Trim('"');
+            }
+            else
+            {
+                var exeIndex = text.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
+                var icoIndex = text.IndexOf(".ico", StringComparison.OrdinalIgnoreCase);
+                var cut = exeIndex >= 0 ? exeIndex + 4 : icoIndex >= 0 ? icoIndex + 4 : -1;
+                path = cut > 0 ? text[..cut] : text.Split(',')[0];
+            }
+
+            path = Environment.ExpandEnvironmentVariables(path.Trim());
+            if (path.Length > 0 && File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        return null;
     }
 
     private async Task<IReadOnlyList<InstalledProgram>> GetUwpProgramsAsync(CancellationToken cancellationToken)
