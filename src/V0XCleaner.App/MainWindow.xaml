@@ -15,6 +15,10 @@
             <views:CleanerPageView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:RegistryPageViewModel}">
+            <views:RegistryPageView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}">
             <StackPanel Margin="32" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="560">
                 <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" Margin="0,0,0,12" />

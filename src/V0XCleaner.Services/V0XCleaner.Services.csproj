@@ -22,4 +22,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="V0XCleaner.Tests" />
+  </ItemGroup>
+
 </Project>

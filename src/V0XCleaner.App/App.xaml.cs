@@ -34,6 +34,7 @@ public partial class App : Application
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<CleanerPageViewModel>();
+                services.AddSingleton<RegistryPageViewModel>();
             })
             .Build();
 

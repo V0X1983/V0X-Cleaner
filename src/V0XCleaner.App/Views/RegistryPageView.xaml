@@ -1,0 +1,123 @@
+<UserControl x:Class="V0XCleaner.App.Views.RegistryPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Registre" FontSize="24" FontWeight="Bold" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Recherche les entrées de registre orphelines (extensions, ActiveX, chemins d'application, DLL partagées, polices, cache MUI, désinstalleurs, raccourcis). Une sauvegarde .reg est créée automatiquement avant toute réparation. Certaines réparations (clés HKEY_LOCAL_MACHINE) peuvent nécessiter de lancer V0X Cleaner en tant qu'administrateur." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Analyser" Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding AnalyzeCommand}" Margin="0,0,12,0" MinWidth="120" />
+
+            <Button Grid.Column="1" Content="Réparer" Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding CanRepairNow}" Click="RepairButton_Click" MinWidth="120" />
+
+            <CheckBox Grid.Column="3" Content="Mode simulation (aperçu sans modification)"
+                      IsChecked="{Binding SimulationMode}" VerticalAlignment="Center"
+                      Foreground="{StaticResource BrushTextSecondary}" />
+        </Grid>
+
+        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" CornerRadius="6" Padding="12" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Sauvegardes registre :" VerticalAlignment="Center"
+                           Foreground="{StaticResource BrushTextSecondary}" Margin="0,0,12,0" />
+
+                <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableBackups}"
+                          SelectedItem="{Binding SelectedBackup}" VerticalAlignment="Center" MaxWidth="420" HorizontalAlignment="Left">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource FilePathToFileNameConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Grid.Column="2" Content="Restaurer" Click="RestoreButton_Click"
+                        Padding="14,6" Margin="12,0,0,0" />
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:CleaningSectionViewModel}">
+                        <StackPanel Margin="0,0,0,20">
+                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{StaticResource BrushAccent}" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{Binding Tasks}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:CleaningTaskViewModel}">
+                                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}"
+                                                          VerticalAlignment="Top" Margin="0,2,12,0" />
+
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="11"
+                                                               Foreground="{StaticResource BrushTextSecondary}"
+                                                               TextWrapping="Wrap" Margin="0,2,0,0" />
+                                                    <TextBlock Text="{Binding LastError}" FontSize="11"
+                                                               Foreground="{StaticResource BrushDanger}"
+                                                               TextWrapping="Wrap" Margin="0,2,0,0"
+                                                               Visibility="{Binding LastError, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="2" VerticalAlignment="Top"
+                                                           Foreground="{StaticResource BrushTextSecondary}"
+                                                           Text="{Binding FoundItemsCount, StringFormat='{}{0} élément(s)'}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Grid Grid.Row="4" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding TotalIssuesFound, StringFormat='Problèmes trouvés : {0}'}"
+                       FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" VerticalAlignment="Center" />
+        </Grid>
+    </Grid>
+</UserControl>

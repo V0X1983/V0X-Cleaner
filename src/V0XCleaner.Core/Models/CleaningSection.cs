@@ -5,5 +5,6 @@ public enum CleaningSection
 {
     System,
     Browsers,
-    ThirdPartyApplications
+    ThirdPartyApplications,
+    Registry
 }

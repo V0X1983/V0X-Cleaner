@@ -17,4 +17,11 @@ public sealed class CleaningTask
     public required IScanner Scanner { get; init; }
     public required ICleaner Cleaner { get; init; }
     public bool SelectedByDefault { get; init; } = true;
+
+    /// <summary>
+    /// Regroupement fin optionnel à l'intérieur d'une <see cref="CleaningSection"/> (ex: les
+    /// différentes catégories de la page Registre). Null = pas de sous-groupe, la page consommatrice
+    /// groupe alors directement par Section.
+    /// </summary>
+    public string? SubGroupLabel { get; init; }
 }

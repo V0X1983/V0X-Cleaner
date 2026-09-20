@@ -90,7 +90,7 @@ public partial class CleanerPageViewModel : ObservableObject
                 taskVm.Status = CleaningTaskStatus.Scanning;
                 try
                 {
-                    var result = await taskVm.Task.Scanner.ScanAsync();
+                    var result = await Task.Run(() => taskVm.Task.Scanner.ScanAsync());
                     taskVm.LastScanItems = result.Items;
                     taskVm.FoundItemsCount = result.Items.Count;
                     taskVm.FoundSizeBytes = result.TotalSizeBytes;
@@ -137,7 +137,7 @@ public partial class CleanerPageViewModel : ObservableObject
                 taskVm.Status = CleaningTaskStatus.Cleaning;
                 try
                 {
-                    var result = await taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode);
+                    var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode));
                     freed += result.FreedBytes;
                     failedCount += result.FailedCount;
 

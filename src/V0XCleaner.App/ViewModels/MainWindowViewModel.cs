@@ -45,11 +45,7 @@ public partial class MainWindowViewModel : ObservableObject
         var page = key switch
         {
             "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
-            "registry" => new PlaceholderPageViewModel
-            {
-                Title = "Registre",
-                Description = "Le scanner et réparateur de registre (avec sauvegarde automatique) arrive à l'Étape 2."
-            },
+            "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
             "tools" => new PlaceholderPageViewModel
             {
                 Title = "Outils",
