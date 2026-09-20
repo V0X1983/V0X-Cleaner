@@ -21,7 +21,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         return new SoftwareUpdateScan(true, updates, null);
     }
 
-    public async Task<bool> UpdateAsync(string packageId, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(string packageId, IProgress<SoftwareUpdateProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!PackageIdRegex().IsMatch(packageId))
         {
@@ -29,9 +29,93 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         }
 
         var (started, exitCode, _) = await RunWingetAsync(
-            $"upgrade --id {packageId} --exact --silent --accept-package-agreements --accept-source-agreements", cancellationToken);
+            $"upgrade --id {packageId} --exact --silent --accept-package-agreements --accept-source-agreements",
+            cancellationToken, line => ReportProgress(line, progress));
         logger.LogInformation("Mise à jour winget de {Id} : code {Code}", packageId, exitCode);
         return started && exitCode == 0;
+    }
+
+    public async Task<Uri?> GetWebsiteAsync(string packageId, CancellationToken cancellationToken = default)
+    {
+        if (!PackageIdRegex().IsMatch(packageId))
+        {
+            return null;
+        }
+
+        var (started, _, output) = await RunWingetAsync(
+            $"show --id {packageId} --exact --accept-source-agreements", cancellationToken);
+        return started ? ParseWebsite(output) : null;
+    }
+
+    internal static Uri? ParseWebsite(string output)
+    {
+        // Page d'accueil en priorité, puis site de l'éditeur (libellés winget en anglais ou en français).
+        string[] labels = ["Homepage", "Page d'accueil", "Publisher Url", "URL de l'éditeur", "Éditeur URL"];
+        foreach (var label in labels)
+        {
+            foreach (var line in output.Split(['\r', '\n']))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith(label, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var colon = trimmed.IndexOf(':', label.Length);
+                if (colon < 0)
+                {
+                    continue;
+                }
+
+                if (Uri.TryCreate(trimmed[(colon + 1)..].Trim(), UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)
+                {
+                    return uri;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    internal static void ReportProgress(string line, IProgress<SoftwareUpdateProgress>? progress)
+    {
+        if (progress is null)
+        {
+            return;
+        }
+
+        if (line.Contains("Starting package install", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Démarrage de l'installation", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Successfully verified installer hash", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Le hachage de l'installation a été vérifié", StringComparison.OrdinalIgnoreCase))
+        {
+            progress.Report(new SoftwareUpdateProgress(SoftwareUpdatePhase.Installing, null));
+            return;
+        }
+
+        if (line.Contains("Downloading", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("Téléchargement", StringComparison.OrdinalIgnoreCase))
+        {
+            progress.Report(new SoftwareUpdateProgress(SoftwareUpdatePhase.Downloading, null));
+            return;
+        }
+
+        // Barre de progression winget : « ████▒▒▒  12.3 MB / 45.0 MB » ou « 37% ».
+        var sizes = SizeProgressRegex().Match(line);
+        if (sizes.Success
+            && double.TryParse(sizes.Groups[1].Value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture, out var done)
+            && double.TryParse(sizes.Groups[3].Value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture, out var total)
+            && total > 0)
+        {
+            progress.Report(new SoftwareUpdateProgress(SoftwareUpdatePhase.Downloading, Math.Clamp(done / total * 100, 0, 100)));
+            return;
+        }
+
+        var percent = PercentProgressRegex().Match(line);
+        if (percent.Success && int.TryParse(percent.Groups[1].Value, out var pct))
+        {
+            progress.Report(new SoftwareUpdateProgress(SoftwareUpdatePhase.Downloading, Math.Clamp(pct, 0, 100)));
+        }
     }
 
     internal static IReadOnlyList<SoftwareUpdate> Parse(string output)
@@ -84,7 +168,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         return result;
     }
 
-    private static async Task<(bool Started, int ExitCode, string Output)> RunWingetAsync(string arguments, CancellationToken cancellationToken)
+    private static async Task<(bool Started, int ExitCode, string Output)> RunWingetAsync(string arguments, CancellationToken cancellationToken, Action<string>? onLine = null)
     {
         try
         {
@@ -104,9 +188,38 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
 
             try
             {
-                var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+                var output = new StringBuilder();
+                var current = new StringBuilder();
+                var buffer = new char[1024];
+                int read;
+                while ((read = await process.StandardOutput.ReadAsync(buffer.AsMemory(), cancellationToken)) > 0)
+                {
+                    for (var i = 0; i < read; i++)
+                    {
+                        var c = buffer[i];
+                        output.Append(c);
+                        if (c is '\r' or '\n')
+                        {
+                            if (current.Length > 0)
+                            {
+                                onLine?.Invoke(current.ToString());
+                                current.Clear();
+                            }
+                        }
+                        else
+                        {
+                            current.Append(c);
+                        }
+                    }
+                }
+
+                if (current.Length > 0)
+                {
+                    onLine?.Invoke(current.ToString());
+                }
+
                 await process.WaitForExitAsync(cancellationToken);
-                return (true, process.ExitCode, await outputTask);
+                return (true, process.ExitCode, output.ToString());
             }
             catch (OperationCanceledException)
             {
@@ -126,6 +239,12 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
 
     [GeneratedRegex(@"\S+(?: \S+)*")]
     private static partial Regex HeaderColumnRegex();
+
+    [GeneratedRegex(@"([\d.,]+)\s*(KB|MB|GB|Ko|Mo|Go)\s*/\s*([\d.,]+)\s*(KB|MB|GB|Ko|Mo|Go)")]
+    private static partial Regex SizeProgressRegex();
+
+    [GeneratedRegex(@"(\d{1,3})\s*%")]
+    private static partial Regex PercentProgressRegex();
 
     [GeneratedRegex(@"^[A-Za-z0-9][A-Za-z0-9._\-+]*$")]
     private static partial Regex PackageIdRegex();

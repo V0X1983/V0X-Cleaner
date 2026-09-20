@@ -33,6 +33,10 @@
                                 <Button DockPanel.Dock="Right" Content="Mettre à jour" Padding="8,3" FontSize="11" VerticalAlignment="Center"
                                         Command="{Binding DataContext.UpdateOneCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}" IsEnabled="{Binding CanUpdate}" />
+                                <Button DockPanel.Dock="Right" Content="&#xE774;" FontFamily="Segoe MDL2 Assets" Padding="8,3" FontSize="12"
+                                        VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="Ouvrir le site web de l'éditeur"
+                                        Command="{Binding DataContext.OpenWebsiteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" />
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Status}" VerticalAlignment="Center" MaxWidth="150" Margin="8,0"
                                            Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}" VerticalAlignment="Center" Width="140" Margin="8,0"

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,9 @@ public partial class SoftwareUpdateItemViewModel(SoftwareUpdate update) : Observ
 
     [ObservableProperty]
     private string _status = string.Empty;
+
+    [ObservableProperty]
+    private bool _isLookingUpWebsite;
 }
 
 public partial class SoftwareUpdatesViewModel : ObservableObject
@@ -125,10 +129,25 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
 
     private async Task UpdateItemAsync(SoftwareUpdateItemViewModel item)
     {
-        item.Status = "Mise à jour en cours...";
+        item.Status = "Téléchargement...";
+        var phase = SoftwareUpdatePhase.Downloading;
+        var progress = new Progress<SoftwareUpdateProgress>(p =>
+        {
+            // Ne jamais revenir en arrière : l'installation suit le téléchargement.
+            if (p.Phase < phase)
+            {
+                return;
+            }
+
+            phase = p.Phase;
+            item.Status = p.Phase == SoftwareUpdatePhase.Installing
+                ? "Installation..."
+                : p.Percent is { } pct ? $"Téléchargement {pct:0} %" : "Téléchargement...";
+        });
+
         try
         {
-            var ok = await Task.Run(() => _updater.UpdateAsync(item.Update.Id));
+            var ok = await Task.Run(() => _updater.UpdateAsync(item.Update.Id, progress));
             item.Status = ok ? "Mis à jour" : "Échec (droits administrateur ou application ouverte ?)";
             item.IsUpdated = ok;
         }
@@ -136,6 +155,38 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         {
             _logger.LogError(ex, "Erreur de mise à jour de {Id}", item.Update.Id);
             item.Status = "Erreur";
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenWebsiteAsync(SoftwareUpdateItemViewModel? item)
+    {
+        if (item is null || item.IsLookingUpWebsite)
+        {
+            return;
+        }
+
+        item.IsLookingUpWebsite = true;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var uri = await Task.Run(() => _updater.GetWebsiteAsync(item.Update.Id, cts.Token));
+            if (uri is null)
+            {
+                StatusMessage = $"Aucun site web trouvé pour {item.Name}.";
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Impossible d'ouvrir le site de {Id}", item.Update.Id);
+            StatusMessage = $"Impossible d'ouvrir le site de {item.Name}.";
+        }
+        finally
+        {
+            item.IsLookingUpWebsite = false;
         }
     }
 
