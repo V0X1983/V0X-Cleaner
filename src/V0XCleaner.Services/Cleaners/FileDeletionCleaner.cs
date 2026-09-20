@@ -29,6 +29,8 @@ public sealed class FileDeletionCleaner(
         var succeeded = 0;
         long freedBytes = 0;
 
+        try
+        {
         foreach (var item in items)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -66,6 +68,11 @@ public sealed class FileDeletionCleaner(
                 logger.LogWarning("Échec de suppression : {Path} — {Error}", item.DisplayPath, error);
                 errors.Add(new CleanupError(item.Id, error ?? "Erreur inconnue."));
             }
+        }
+        }
+        finally
+        {
+            quarantineService.Flush();
         }
 
         return Task.FromResult(new CleanupResult

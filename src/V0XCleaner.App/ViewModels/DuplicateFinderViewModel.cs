@@ -156,6 +156,8 @@ public partial class DuplicateFinderViewModel : ObservableObject
                 }
             });
 
+            _quarantine.Flush();
+
             StatusMessage = failed == 0
                 ? $"{deleted} fichier(s) supprimé(s)."
                 : $"{deleted} fichier(s) supprimé(s), {failed} échec(s).";

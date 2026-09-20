@@ -16,6 +16,10 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly object _lock = new();
+    private List<QuarantineEntry>? _cache;
+    private int _unsaved;
+
+    private const int FlushEvery = 200;
 
     private string Root => rootFolder is null ? AppPaths.QuarantineFolder : Directory.CreateDirectory(rootFolder).FullName;
 
@@ -51,7 +55,10 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
 
                 var entries = LoadIndex();
                 entries.Add(entry);
-                SaveIndex(entries);
+                if (++_unsaved >= FlushEvery)
+                {
+                    SaveIndex(entries);
+                }
 
                 return entry;
             }
@@ -59,6 +66,17 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
             {
                 logger.LogWarning(ex, "Échec de la mise en quarantaine de {Path}", path);
                 return null;
+            }
+        }
+    }
+
+    public void Flush()
+    {
+        lock (_lock)
+        {
+            if (_unsaved > 0)
+            {
+                SaveIndex(LoadIndex());
             }
         }
     }
@@ -175,6 +193,11 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
 
     private List<QuarantineEntry> LoadIndex()
     {
+        return _cache ??= ReadIndexFromDisk();
+    }
+
+    private List<QuarantineEntry> ReadIndexFromDisk()
+    {
         try
         {
             if (File.Exists(IndexFilePath))
@@ -201,6 +224,7 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
         {
             var json = JsonSerializer.Serialize(entries, JsonOptions);
             File.WriteAllText(IndexFilePath, json);
+            _unsaved = 0;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

@@ -104,6 +104,23 @@ public class QuarantineTests : IDisposable
         Assert.False(File.Exists(entry.QuarantinedPath));
     }
 
+    [Fact]
+    public void ManyFiles_AreQuarantinedQuicklyAndPersistedAfterFlush()
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        for (var i = 0; i < 1500; i++)
+        {
+            Assert.NotNull(_quarantine.Quarantine(NewFile($"f{i}.tmp")));
+        }
+
+        _quarantine.Flush();
+        stopwatch.Stop();
+
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(20), $"trop lent : {stopwatch.Elapsed}");
+        var reloaded = new QuarantineService(NullLogger<QuarantineService>.Instance, Path.Combine(_root, "q"));
+        Assert.Equal(1500, reloaded.GetEntries().Count);
+    }
+
     private static CleanupItem ItemFor(string path) => new()
     {
         Id = path,

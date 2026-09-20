@@ -13,6 +13,9 @@ public interface IQuarantineService
     /// <summary>Déplace le fichier vers la quarantaine. Retourne l'entrée créée, ou null en cas d'échec (le fichier n'existe pas, verrouillé, permissions...).</summary>
     QuarantineEntry? Quarantine(string path);
 
+    /// <summary>Écrit l'index sur disque. La mise en quarantaine regroupe les écritures (toutes les 200 entrées) : à appeler en fin de lot.</summary>
+    void Flush();
+
     /// <summary>Liste les fichiers actuellement en quarantaine, du plus récent au plus ancien.</summary>
     IReadOnlyList<QuarantineEntry> GetEntries();
 
