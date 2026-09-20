@@ -5,78 +5,175 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <Grid Margin="32,24">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!-- Ligne partagée par les onglets « applications » et « tâches planifiées » -->
+        <DataTemplate x:Key="StartupRowTemplate" DataType="{x:Type vm:StartupEntryViewModel}">
+            <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10"
+                    Visibility="{Binding IsDeleted, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="44" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource BrushDanger}" TextWrapping="Wrap"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Publisher}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding FilePath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               Margin="0,0,12,0" ToolTip="{Binding Location}" />
+                    <CheckBox Grid.Column="3" Style="{StaticResource ToggleSwitchStyle}" IsChecked="{Binding IsEnabled}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Activé au démarrage" />
+                    <Button Grid.Column="4" Content="&#xE712;" FontFamily="Segoe MDL2 Assets" Padding="8,3" FontSize="12"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip="Plus d'actions"
+                            Click="MoreButton_Click" Tag="{Binding}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Ligne d'une entrée du menu contextuel -->
+        <DataTemplate x:Key="ContextRowTemplate" DataType="{x:Type vm:ContextMenuEntryViewModel}">
+            <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,0,0,1" Padding="28,10,12,10">
+                <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="232" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="44" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource BrushDanger}" TextWrapping="Wrap"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Publisher}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding FilePath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    <CheckBox Grid.Column="3" Style="{StaticResource ToggleSwitchStyle}" IsChecked="{Binding IsEnabled}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Afficher dans le menu contextuel" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Ligne d'un service Windows -->
+        <DataTemplate x:Key="ServiceRowTemplate" DataType="{x:Type vm:ServiceEntryViewModel}">
+            <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10">
+                <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="44" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                        <TextBlock Text="{Binding StateText}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" />
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{StaticResource BrushDanger}" TextWrapping="Wrap"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Publisher}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding FilePath}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    <CheckBox Grid.Column="3" Style="{StaticResource ToggleSwitchStyle}" IsChecked="{Binding IsEnabled}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Démarrer avec Windows" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="32,24,32,20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Démarrage" FontSize="24" FontWeight="Bold" />
-            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Programmes lancés à l'ouverture de session (registre, dossier Démarrage, tâches planifiées). Décocher désactive l'entrée sans la supprimer, comme dans le Gestionnaire des tâches." />
+        <TextBlock Grid.Row="0" Text="Gestionnaire de démarrage" FontSize="24" FontWeight="Bold" Margin="0,0,0,12" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="startupTabs" Content="{Binding AppsTabTitle}" IsChecked="{Binding IsAppsTab}" />
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="startupTabs" Content="{Binding TasksTabTitle}" IsChecked="{Binding IsTasksTab}" />
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="startupTabs" Content="{Binding ContextTabTitle}" IsChecked="{Binding IsContextTab}" />
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="startupTabs" Content="{Binding ServicesTabTitle}" IsChecked="{Binding IsServicesTab}" />
         </StackPanel>
 
-        <Button Grid.Row="1" Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}"
-                Command="{Binding RefreshCommand}" HorizontalAlignment="Left" MinWidth="120" Margin="0,0,0,16" />
+        <Border Grid.Row="2" BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0" Padding="0,20,0,20">
+            <StackPanel>
+                <TextBlock Text="{Binding Headline}" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="{Binding HeadlineDescription}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Groups}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:StartupGroupViewModel}">
-                        <StackPanel Margin="0,0,0,20">
-                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
-                                       Foreground="{StaticResource BrushAccent}" Margin="0,0,0,8" />
-                            <ItemsControl ItemsSource="{Binding Entries}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type vm:StartupEntryViewModel}">
-                                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10"
-                                                Visibility="{Binding IsDeleted, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                            <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
+        <!-- En-têtes de colonnes -->
+        <Grid Grid.Row="3" Margin="12,0,29,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="44" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Programme" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="1" Text="Éditeur" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="2" Text="Chemin d'accès au fichier" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="3" HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Text" Value="Démarrage" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsContextTab}" Value="True">
+                                <Setter Property="Text" Value="Activer" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
 
-                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}"
-                                                          VerticalAlignment="Top" Margin="0,2,12,0" ToolTip="Activé au démarrage" />
+        <Grid Grid.Row="4">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsAppsTab, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding Apps}" ItemTemplate="{StaticResource StartupRowTemplate}" />
+            </ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsTasksTab, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding Tasks}" ItemTemplate="{StaticResource StartupRowTemplate}" />
+            </ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsContextTab, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding ContextGroups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ContextMenuGroupViewModel}">
+                            <StackPanel Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" Margin="12,10,0,10">
+                                    <TextBlock Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                                               Foreground="{StaticResource BrushAccent}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Entries}" ItemTemplate="{StaticResource ContextRowTemplate}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsServicesTab, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding Services}" ItemTemplate="{StaticResource ServiceRowTemplate}" />
+            </ScrollViewer>
+        </Grid>
 
-                                                <StackPanel Grid.Column="1">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                                    <TextBlock Text="{Binding Command}" FontSize="11"
-                                                               Foreground="{StaticResource BrushTextSecondary}"
-                                                               TextWrapping="Wrap" Margin="0,2,0,0" />
-                                                    <TextBlock Text="{Binding Location}" FontSize="10"
-                                                               Foreground="{StaticResource BrushTextSecondary}"
-                                                               TextWrapping="Wrap" Margin="0,2,0,0" Opacity="0.7" />
-                                                    <TextBlock Text="{Binding StatusMessage}" FontSize="11"
-                                                               Foreground="{StaticResource BrushDanger}"
-                                                               TextWrapping="Wrap" Margin="0,2,0,0"
-                                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
-                                                </StackPanel>
-
-                                                <TextBlock Grid.Column="2" Text="{Binding SourceLabel}" VerticalAlignment="Top"
-                                                           FontSize="11" Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,12,0" />
-
-                                                <Button Grid.Column="3" Content="Supprimer" VerticalAlignment="Top"
-                                                        Padding="10,4" FontSize="11"
-                                                        Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+        <!-- Barre du bas -->
+        <Border Grid.Row="5" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushBorder}" Margin="0,16,0,0" Padding="0,16,0,0">
+            <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Right" Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RefreshCommand}" MinWidth="120" />
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

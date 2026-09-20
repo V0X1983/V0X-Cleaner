@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using V0XCleaner.Core.Abstractions;
 using V0XCleaner.Core.Models;
@@ -22,6 +24,13 @@ public partial class StartupEntryViewModel : ObservableObject
         _ => Entry.Source.ToString()
     };
 
+    /// <summary>Chemin du fichier exécutable extrait de la commande de démarrage (sans arguments).</summary>
+    public string FilePath { get; }
+
+    /// <summary>Éditeur lu dans les propriétés du fichier ; vide tant que non chargé ou inconnu.</summary>
+    [ObservableProperty]
+    private string _publisher = string.Empty;
+
     [ObservableProperty]
     private bool _isEnabled;
 
@@ -38,7 +47,24 @@ public partial class StartupEntryViewModel : ObservableObject
     {
         Entry = entry;
         _manager = manager;
+        FilePath = V0XCleaner.Services.CommandLineHelper.ExtractFilePath(entry.Command);
         _isEnabled = entry.IsEnabled; // affectation directe : ne déclenche pas OnIsEnabledChanged
+    }
+
+    /// <summary>Charge l'éditeur depuis les métadonnées du fichier (lecture disque, à appeler hors du thread UI).</summary>
+    public void LoadPublisher()
+    {
+        try
+        {
+            if (File.Exists(FilePath))
+            {
+                Publisher = FileVersionInfo.GetVersionInfo(FilePath).CompanyName?.Trim() ?? string.Empty;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            // Fichier illisible : l'éditeur reste vide.
+        }
     }
 
     partial void OnIsEnabledChanged(bool value)

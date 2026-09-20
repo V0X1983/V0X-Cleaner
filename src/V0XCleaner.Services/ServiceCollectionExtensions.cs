@@ -40,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISoftwareUpdater, SoftwareUpdater>();
         services.AddSingleton<IDriverCatalog, DriverCatalog>();
         services.AddSingleton<IProcessOptimizer, ProcessOptimizer>();
+        services.AddSingleton<IContextMenuManager, ContextMenuManager>();
+        services.AddSingleton<IWindowsServiceManager, WindowsServiceManager>();
 
         return services;
     }

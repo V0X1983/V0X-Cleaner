@@ -30,6 +30,34 @@
         </Setter>
     </Style>
 
+    <!-- Interrupteur à bascule (CheckBox) : vert quand activé. -->
+    <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Track" Width="46" Height="24" CornerRadius="12" BorderThickness="1"
+                            Background="{DynamicResource BrushSurfaceAlt}" BorderBrush="{DynamicResource BrushBorder}">
+                        <Ellipse x:Name="Knob" Width="16" Height="16" HorizontalAlignment="Left" Margin="4,0,0,0"
+                                 Fill="{DynamicResource BrushTextSecondary}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource BrushAccent}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource BrushAccent}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="Knob" Property="Margin" Value="0,0,4,0" />
+                            <Setter TargetName="Knob" Property="Fill" Value="White" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="ToolTip">
         <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
