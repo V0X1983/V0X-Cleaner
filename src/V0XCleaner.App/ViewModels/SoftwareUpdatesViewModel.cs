@@ -13,7 +13,16 @@ public partial class SoftwareUpdateItemViewModel(SoftwareUpdate update) : Observ
 
     public string Name => Update.Name;
 
-    public string VersionText => $"{Update.CurrentVersion} → {Update.AvailableVersion}";
+    public string VersionText => IsUpdated
+        ? Update.AvailableVersion
+        : $"{Update.CurrentVersion} → {Update.AvailableVersion}";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VersionText))]
+    [NotifyPropertyChangedFor(nameof(CanUpdate))]
+    private bool _isUpdated;
+
+    public bool CanUpdate => !IsUpdated;
 
     [ObservableProperty]
     private string _status = string.Empty;
@@ -101,7 +110,7 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            foreach (var item in Updates.ToList())
+            foreach (var item in Updates.Where(u => !u.IsUpdated).ToList())
             {
                 await UpdateItemAsync(item);
             }
@@ -121,6 +130,7 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         {
             var ok = await Task.Run(() => _updater.UpdateAsync(item.Update.Id));
             item.Status = ok ? "Mis à jour" : "Échec (droits administrateur ou application ouverte ?)";
+            item.IsUpdated = ok;
         }
         catch (Exception ex)
         {

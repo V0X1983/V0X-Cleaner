@@ -32,7 +32,7 @@
                             <DockPanel LastChildFill="True">
                                 <Button DockPanel.Dock="Right" Content="Mettre à jour" Padding="8,3" FontSize="11" VerticalAlignment="Center"
                                         Command="{Binding DataContext.UpdateOneCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}" />
+                                        CommandParameter="{Binding}" IsEnabled="{Binding CanUpdate}" />
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Status}" VerticalAlignment="Center" MaxWidth="150" Margin="8,0"
                                            Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}" VerticalAlignment="Center" Width="140" Margin="8,0"
