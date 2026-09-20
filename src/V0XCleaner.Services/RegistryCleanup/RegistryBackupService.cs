@@ -14,6 +14,9 @@ namespace V0XCleaner.Services.RegistryCleanup;
 /// </summary>
 public sealed class RegistryBackupService(ILogger<RegistryBackupService> logger) : IRegistryBackupService
 {
+    /// <summary>Nombre de sauvegardes conservées ; les plus anciennes sont supprimées à chaque nouvelle sauvegarde.</summary>
+    private const int MaxBackups = 10;
+
     public async Task<string?> BackupKeysAsync(IReadOnlyCollection<string> registryKeyPaths, CancellationToken cancellationToken = default)
     {
         var uniqueKeys = registryKeyPaths.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -66,7 +69,24 @@ public sealed class RegistryBackupService(ILogger<RegistryBackupService> logger)
         await File.WriteAllTextAsync(backupFilePath, combined, Encoding.Unicode, cancellationToken);
 
         logger.LogInformation("Sauvegarde registre créée : {Path} ({Count} clé(s)).", backupFilePath, sections.Count);
+        PruneOldBackups();
         return backupFilePath;
+    }
+
+    private void PruneOldBackups()
+    {
+        try
+        {
+            // Les noms contiennent la date : le tri par nom décroissant place les plus récentes en premier.
+            foreach (var old in ListBackups().Skip(MaxBackups))
+            {
+                File.Delete(old);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning("Impossible de purger les anciennes sauvegardes du registre : {Error}", ex.Message);
+        }
     }
 
     public IReadOnlyList<string> ListBackups()
