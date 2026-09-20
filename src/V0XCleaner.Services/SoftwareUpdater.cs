@@ -29,7 +29,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         }
 
         var (started, exitCode, _) = await RunWingetAsync(
-            $"upgrade --id {packageId} --exact --silent --accept-package-agreements --accept-source-agreements",
+            $"upgrade --id {packageId} --exact --include-unknown --silent --accept-package-agreements --accept-source-agreements",
             cancellationToken, line => ReportProgress(line, progress));
         logger.LogInformation("Mise à jour winget de {Id} : code {Code}", packageId, exitCode);
         return started && exitCode == 0;
@@ -53,7 +53,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         string[] labels = ["Homepage", "Page d'accueil", "Publisher Url", "URL de l'éditeur", "Éditeur URL"];
         foreach (var label in labels)
         {
-            foreach (var line in output.Split(['\r', '\n']))
+            foreach (var line in output.Replace('’', '\'').Split(['\r', '\n']))
             {
                 var trimmed = line.Trim();
                 if (!trimmed.StartsWith(label, StringComparison.OrdinalIgnoreCase))

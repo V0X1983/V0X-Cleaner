@@ -3,6 +3,14 @@
 
     <!-- Styles implicites des contrôles standard, basés sur les brushes du thème actif (DynamicResource : bascule clair/sombre). -->
 
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
+        <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+
     <Style TargetType="Button">
         <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
