@@ -28,6 +28,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDriveWiper, DriveWiper>();
         services.AddSingleton<ISystemRestoreManager, SystemRestoreManager>();
 
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAutoCleanScheduler, AutoCleanScheduler>();
+        services.AddSingleton<IUpdateChecker, GitHubUpdateChecker>();
+        services.AddSingleton<IJunkEstimator, JunkEstimator>();
+        services.AddSingleton<IMemoryOptimizer, MemoryOptimizer>();
+        services.AddSingleton<IHealthCheckService, HealthCheckService>();
+
         return services;
     }
 }

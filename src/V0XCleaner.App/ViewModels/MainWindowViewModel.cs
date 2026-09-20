@@ -11,7 +11,6 @@ public partial class MainWindowViewModel : ObservableObject
         new NavigationItem { Key = "registry", Title = "Registre", Glyph = "" },
         new NavigationItem { Key = "tools", Title = "Outils", Glyph = "" },
         new NavigationItem { Key = "options", Title = "Options", Glyph = "" },
-        new NavigationItem { Key = "updates", Title = "Mises à jour", Glyph = "" },
     ];
 
     [ObservableProperty]
@@ -47,16 +46,7 @@ public partial class MainWindowViewModel : ObservableObject
             "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
             "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
             "tools" => (object)_serviceProvider.GetRequiredService<ToolsPageViewModel>(),
-            "options" => new PlaceholderPageViewModel
-            {
-                Title = "Options",
-                Description = "Exclusions, langue, démarrage avec Windows, thème, planification : Étape 8."
-            },
-            "updates" => new PlaceholderPageViewModel
-            {
-                Title = "Mises à jour",
-                Description = "Vérification et mise à jour automatique de l'application et de ses définitions : Étape 6."
-            },
+            "options" => (object)_serviceProvider.GetRequiredService<OptionsViewModel>(),
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, null)
         };
 

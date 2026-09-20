@@ -23,6 +23,10 @@
             <views:ToolsPageView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:OptionsViewModel}">
+            <views:OptionsView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}">
             <StackPanel Margin="32" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="560">
                 <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" Margin="0,0,0,12" />

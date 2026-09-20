@@ -1,0 +1,84 @@
+<UserControl x:Class="V0XCleaner.App.Views.HealthCheckView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Bilan de santé" FontSize="24" FontWeight="Bold" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Vue d'ensemble de l'état du système, à partir des mêmes analyses que le Nettoyeur, le Registre et le Démarrage." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BrushSurface}" CornerRadius="8" Padding="16" Height="100">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding OverallScore}" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"
+                               Foreground="{StaticResource BrushAccent}" />
+                    <TextBlock Text="/ 100" FontSize="12" HorizontalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RunCommand}"
+                        HorizontalAlignment="Left" MinWidth="120" Margin="0,0,0,8" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Nettoyage rapide en un clic" Click="QuickCleanButton_Click" Padding="12,6" Margin="0,0,8,0" />
+                    <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" Padding="12,6" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:HealthCheckItemViewModel}">
+                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,8" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="6" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="{Binding SeverityBrush}" CornerRadius="3" Margin="0,0,12,0" />
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding Recommendation}" FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{StaticResource BrushAccent}" Margin="0,4,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding SeverityLabel}" Foreground="{Binding SeverityBrush}" FontWeight="SemiBold"
+                                               HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding Score, StringFormat='{}{0}/100'}" FontSize="11"
+                                               Foreground="{StaticResource BrushTextSecondary}" HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+    </Grid>
+</UserControl>
