@@ -73,6 +73,13 @@ public partial class ToolsPageViewModel : ObservableObject
 
     partial void OnSelectedToolItemChanged(NavigationItem value)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var key = value.Key;
+        Serilog.Log.Information("Navigation Outils › {Key}", key);
+        System.Windows.Application.Current?.Dispatcher.InvokeAsync(
+            () => Serilog.Log.Information("Page {Key} affichée en {Ms} ms", key, stopwatch.ElapsedMilliseconds),
+            System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
         CurrentToolPage = value.Key switch
         {
             "health-check" => _healthCheckViewModel,

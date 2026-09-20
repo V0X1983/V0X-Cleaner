@@ -121,6 +121,17 @@ public class QuarantineTests : IDisposable
         Assert.Equal(1500, reloaded.GetEntries().Count);
     }
 
+    [Fact]
+    public void PurgeExpired_RemovesOrphanFoldersMissingFromIndex()
+    {
+        var orphan = Path.Combine(_root, "q", "orphan-folder");
+        Directory.CreateDirectory(orphan);
+        File.WriteAllText(Path.Combine(orphan, "x.tmp"), "x");
+
+        Assert.Equal(1, _quarantine.PurgeExpired(TimeSpan.Zero));
+        Assert.False(Directory.Exists(orphan));
+    }
+
     private static CleanupItem ItemFor(string path) => new()
     {
         Id = path,

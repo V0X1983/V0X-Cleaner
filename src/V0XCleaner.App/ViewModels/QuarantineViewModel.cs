@@ -10,6 +10,8 @@ public partial class QuarantineViewModel : ObservableObject
     private readonly IQuarantineService _quarantine;
     private readonly ISettingsService _settings;
 
+    private const int MaxDisplayed = 300;
+
     public ObservableCollection<QuarantineEntryViewModel> Entries { get; } = [];
 
     [ObservableProperty]
@@ -25,15 +27,20 @@ public partial class QuarantineViewModel : ObservableObject
     [RelayCommand]
     private void Refresh()
     {
+        var all = _quarantine.GetEntries();
+        var shown = all.Take(MaxDisplayed).Select(e => new QuarantineEntryViewModel(e)).ToList();
+
         Entries.Clear();
-        foreach (var entry in _quarantine.GetEntries())
+        foreach (var vm in shown)
         {
-            Entries.Add(new QuarantineEntryViewModel(entry));
+            Entries.Add(vm);
         }
 
-        StatusMessage = Entries.Count > 0
-            ? $"{Entries.Count} fichier(s) en quarantaine (purge automatique après {_settings.Current.QuarantineRetentionDays} jour(s))."
-            : "La quarantaine est vide.";
+        StatusMessage = all.Count == 0
+            ? "La quarantaine est vide."
+            : all.Count > MaxDisplayed
+                ? $"{all.Count} fichier(s) en quarantaine — les {MaxDisplayed} plus récents sont affichés (purge automatique après {_settings.Current.QuarantineRetentionDays} jour(s))."
+                : $"{all.Count} fichier(s) en quarantaine (purge automatique après {_settings.Current.QuarantineRetentionDays} jour(s)).";
     }
 
     [RelayCommand]
@@ -62,9 +69,10 @@ public partial class QuarantineViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void PurgeAll()
+    private async Task PurgeAllAsync()
     {
-        _quarantine.PurgeExpired(TimeSpan.Zero);
+        StatusMessage = "Suppression en cours...";
+        await Task.Run(() => _quarantine.PurgeExpired(TimeSpan.Zero));
         Refresh();
     }
 }

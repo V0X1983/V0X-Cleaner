@@ -61,6 +61,7 @@ public partial class App : Application
             .Build();
 
         RegisterGlobalExceptionHandlers();
+        StartUiWatchdog();
 
         _host.Start();
 
@@ -98,6 +99,28 @@ public partial class App : Application
         };
 
         mainWindow.Show();
+    }
+
+    private void StartUiWatchdog()
+    {
+        var dispatcher = Dispatcher;
+        var thread = new Thread(() =>
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
+                var sent = DateTime.UtcNow;
+                var responded = new ManualResetEventSlim(false);
+                dispatcher.BeginInvoke(new Action(() => responded.Set()), System.Windows.Threading.DispatcherPriority.Send);
+                if (!responded.Wait(TimeSpan.FromSeconds(3)))
+                {
+                    Log.Warning("Interface bloquée depuis plus de 3 s");
+                    responded.Wait();
+                    Log.Warning("Interface débloquée après {Seconds:F1} s", (DateTime.UtcNow - sent).TotalSeconds);
+                }
+            }
+        }) { IsBackground = true, Name = "UiWatchdog" };
+        thread.Start();
     }
 
     private void RegisterGlobalExceptionHandlers()

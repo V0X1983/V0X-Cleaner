@@ -165,14 +165,43 @@ public sealed class QuarantineService(ILogger<QuarantineService> logger, string?
                 entries.Remove(entry);
             }
 
+            var orphans = DeleteOrphanFolders(entries, cutoff);
+
             if (expired.Count > 0)
             {
                 SaveIndex(entries);
                 logger.LogInformation("{Count} élément(s) purgé(s) de la quarantaine (rétention dépassée).", expired.Count);
             }
 
-            return expired.Count;
+            return expired.Count + orphans;
         }
+    }
+
+    /// <summary>Supprime les sous-dossiers de quarantaine absents de l'index (restes d'une opération interrompue) plus vieux que la rétention.</summary>
+    private int DeleteOrphanFolders(List<QuarantineEntry> entries, DateTime cutoffUtc)
+    {
+        var deleted = 0;
+        try
+        {
+            var known = entries.Select(e => e.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var folder in Directory.EnumerateDirectories(Root))
+            {
+                var name = Path.GetFileName(folder);
+                if (known.Contains(name) || Directory.GetCreationTimeUtc(folder) >= cutoffUtc)
+                {
+                    continue;
+                }
+
+                TryDeleteEntryFolder(name);
+                deleted++;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Échec du nettoyage des dossiers de quarantaine orphelins.");
+        }
+
+        return deleted;
     }
 
     private void TryDeleteEntryFolder(string id)
