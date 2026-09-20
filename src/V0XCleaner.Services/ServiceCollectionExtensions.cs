@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IStartupManager, StartupManager>();
 
+        services.AddSingleton<IInstalledProgramsCatalog, InstalledProgramsCatalog>();
+
         return services;
     }
 }

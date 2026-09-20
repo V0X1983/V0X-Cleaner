@@ -1,0 +1,92 @@
+using System.IO;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using Microsoft.Win32;
+using V0XCleaner.App.ViewModels;
+
+namespace V0XCleaner.App.Views;
+
+public partial class UninstallManagerView : UserControl
+{
+    public UninstallManagerView()
+    {
+        InitializeComponent();
+    }
+
+    private async void UninstallButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: InstalledProgramViewModel programVm } || DataContext is not UninstallManagerViewModel viewModel)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Désinstaller \"{programVm.DisplayName}\" ?\n\nCeci lance le désinstalleur officiel du programme.",
+            "Confirmer la désinstallation",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await viewModel.UninstallCommand.ExecuteAsync(programVm);
+    }
+
+    private async void ForceRemoveButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: InstalledProgramViewModel programVm } || DataContext is not UninstallManagerViewModel viewModel)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Ceci va supprimer directement le dossier d'installation et l'entrée de registre de \"{programVm.DisplayName}\" " +
+            "SANS lancer son désinstalleur.\n\n" +
+            "À utiliser seulement si la désinstallation normale a échoué ou si le programme n'apparaît plus que comme un résidu. " +
+            "Une sauvegarde .reg sera créée automatiquement avant la modification du registre.\n\nContinuer ?",
+            "Confirmer la suppression forcée",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await viewModel.ForceRemoveCommand.ExecuteAsync(programVm);
+    }
+
+    private void ExportCsvButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not UninstallManagerViewModel viewModel)
+        {
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            FileName = $"v0xcleaner-programmes-{DateTime.Now:yyyyMMdd}.csv",
+            Filter = "Fichier CSV (*.csv)|*.csv",
+            DefaultExt = ".csv"
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            File.WriteAllText(dialog.FileName, viewModel.BuildCsvExport(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        }
+        catch (IOException ex)
+        {
+            MessageBox.Show($"Échec de l'export : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+}

@@ -10,6 +10,10 @@
         <DataTemplate DataType="{x:Type vm:StartupManagerViewModel}">
             <views:StartupManagerView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:UninstallManagerViewModel}">
+            <views:UninstallManagerView />
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
