@@ -46,11 +46,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             "cleaner" => (object)_serviceProvider.GetRequiredService<CleanerPageViewModel>(),
             "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
-            "tools" => new PlaceholderPageViewModel
-            {
-                Title = "Outils",
-                Description = "Démarrage, désinstalleur, analyseur de disque, doublons, effaceur de disque, restauration système : Étapes 3 à 5."
-            },
+            "tools" => (object)_serviceProvider.GetRequiredService<ToolsPageViewModel>(),
             "options" => new PlaceholderPageViewModel
             {
                 Title = "Options",

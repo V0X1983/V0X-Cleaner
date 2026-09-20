@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRegistryBackupService, RegistryBackupService>();
         services.AddSingleton<IRegistryIssueCatalog, RegistryIssueCatalog>();
 
+        services.AddSingleton<IStartupManager, StartupManager>();
+
         return services;
     }
 }

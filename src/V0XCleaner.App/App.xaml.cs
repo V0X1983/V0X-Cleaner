@@ -35,6 +35,8 @@ public partial class App : Application
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<CleanerPageViewModel>();
                 services.AddSingleton<RegistryPageViewModel>();
+                services.AddSingleton<StartupManagerViewModel>();
+                services.AddSingleton<ToolsPageViewModel>();
             })
             .Build();
 
