@@ -37,10 +37,10 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
                 <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RunCommand}"
                         HorizontalAlignment="Left" MinWidth="120" Margin="0,0,0,8" />
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Nettoyage rapide en un clic" Click="QuickCleanButton_Click" Padding="12,6" Margin="0,0,8,0" />
-                    <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" Padding="12,6" />
-                </StackPanel>
+                <WrapPanel>
+                    <Button Content="Nettoyage rapide en un clic" Click="QuickCleanButton_Click" Padding="12,6" Margin="0,0,8,8" />
+                    <Button Content="Libérer la RAM" Command="{Binding FreeMemoryCommand}" Padding="12,6" Margin="0,0,0,8" />
+                </WrapPanel>
             </StackPanel>
         </Grid>
 

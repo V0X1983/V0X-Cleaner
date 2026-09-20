@@ -65,10 +65,15 @@ public partial class HomePageViewModel : ObservableObject
 
         try
         {
-            var healthTask = Task.Run(() => _health.RunAsync());
-            var junkTask = Task.Run(() => _junk.EstimateReclaimableBytesAsync());
-            HealthScoreText = $"{(await healthTask).OverallScore}/100";
-            ReclaimableText = ByteFormatter.Format(await junkTask);
+            var healthTask = Task.Run(async () =>
+            {
+                HealthScoreText = $"{(await _health.RunAsync()).OverallScore}/100";
+            });
+            var junkTask = Task.Run(async () =>
+            {
+                ReclaimableText = ByteFormatter.Format(await _junk.EstimateReclaimableBytesAsync());
+            });
+            await Task.WhenAll(healthTask, junkTask);
         }
         catch (Exception ex)
         {
