@@ -8,15 +8,17 @@ Application Windows 11 de nettoyage et d'optimisation système, équivalente à 
 
 ## État actuel (pour reprendre dans une nouvelle conversation)
 
-**Étapes 0 à 9 terminées et committées** (voir `git log --oneline` — un commit par étape). Solution `V0XCleaner.sln` fonctionnelle, compile sans erreur, 43 tests unitaires passent. Chaque étape a été vérifiée en conditions réelles sur la machine (lancement de l'app, scans réels, UI Automation) avant commit.
+**Étapes 0 à 9 terminées + itérations UX/fonctionnelles, tout committé** (`git log --oneline`). Build OK, 47 tests unitaires passent. Solution `V0XCleaner.sln` (C# / .NET 8 / WPF, MVVM CommunityToolkit, DI Microsoft.Extensions).
 
-Structure : `src/V0XCleaner.Core` (modèles + interfaces, aucune dépendance UI/Windows), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM, interop native), `src/V0XCleaner.App` (WPF, MVVM avec CommunityToolkit.Mvvm, DI via Microsoft.Extensions.DependencyInjection), `tests/V0XCleaner.Tests` (xUnit).
+Structure : `src/V0XCleaner.Core` (modèles + interfaces), `src/V0XCleaner.Services` (implémentations : registre, fichiers, WMI, COM/Windows Update, winget), `src/V0XCleaner.App` (WPF), `tests/V0XCleaner.Tests` (xUnit, vrais dossiers temporaires, jamais le vrai registre), `installer/` (build.ps1 + Inno Setup .iss, non compilé : Inno Setup absent).
 
-Navigation actuelle : **Nettoyeur** (Étape 1), **Registre** (Étape 2), **Outils** (sous-onglets : Bilan de santé, Démarrage, Désinstalleur, Analyseur de disque, Doublons, Effaceur de disque, Restauration système — Étapes 3-6), **Options** (nettoyage planifié, surveillance temps réel, mises à jour, thème — Étape 6).
+Navigation : **Accueil**, **Nettoyeur** (sections Système, Navigateurs, Applications tierces, Stockage cloud), **Registre**, **Outils** (Bilan de santé, Démarrage, Désinstalleur, Analyseur de disque, Doublons, Effaceur de disque, Restauration système, Corbeille de sécurité, Mise à jour de logiciels (winget), Mise à jour de pilotes (Windows Update, installation possible en admin), Optimiseur de performances), **Options**, **Aide**.
 
-**Reporté volontairement depuis l'Étape 6** (à garder en tête, pas forcément à rattraper) : gestion manuelle de priorité de processus (risque/valeur douteux face au Gestionnaire des tâches natif), support multi-langue complet (chantier de traduction de toute l'app, mieux à sa place à l'Étape 8 dédiée à l'UI).
+Acquis importants : quarantaine/Undo des fichiers nettoyés (`IQuarantineService`, index en mémoire écrit par lots — ne jamais réécrire l'index par fichier), élévation UAC à la demande (`IElevationService`, bouton dans le menu latéral), écran de chargement plein page réutilisable (`ScanProgress` + `Controls/LoadingOverlay`, sur tous les « Analyser », nettoyage rapide, réparation registre, suppression quarantaine), thème appliqué à tous les contrôles (`Resources/Controls.xaml`), journaux de navigation et détection de blocage de l'UI dans `%AppData%\V0XCleaner\logs`.
 
-**Feuille de route terminée.** Restent à faire hors roadmap : compiler l'installeur (installer Inno Setup 6), signature de code, multi-langue. Reporté depuis l'Étape 8 : support multi-langue, splash screen, Mica/Acrylic.
+**Pièges appris** : (1) ne PAS automatiser de clics sur les vrais boutons de modification (Réparer, Nettoyer, Supprimer) sur la machine de l'utilisateur ; captures sûres = `PrintWindow` sur sa propre fenêtre + UI Automation en lecture seule. (2) Si l'app tourne en administrateur, elle est impossible à fermer depuis Claude : demander à l'utilisateur de la fermer avant de rebuild (ou compiler avec `-o artifacts/tmpbuild`). (3) `dotnet test` ne rebuild pas le projet App : toujours `dotnet build V0XCleaner.sln`. (4) Écrire les gros fichiers avec l'outil Write plutôt qu'en heredoc bash (échappements).
+
+**Idées restantes (hors roadmap)** : compiler l'installeur (Inno Setup 6), signature de code, multi-langue, splash/Mica, récupération de fichiers, noms/logos réels des apps Microsoft Store dans le Désinstalleur, agrégation des processus de même nom dans l'Optimiseur, compteur de fichiers pendant le nettoyage d'une grosse catégorie, menu Outils à plat façon CCleaner.
 
 ---
 
