@@ -13,6 +13,8 @@ public partial class CleanerPageViewModel : ObservableObject
     private readonly ILogger<CleanerPageViewModel> _logger;
     private readonly ISettingsService _settings;
 
+    public ScanProgress Loading { get; } = new();
+
     public ObservableCollection<CleaningSectionViewModel> Sections { get; } = [];
 
     [ObservableProperty]
@@ -79,6 +81,9 @@ public partial class CleanerPageViewModel : ObservableObject
         IsBusy = true;
         HasScanned = false;
         StatusMessage = "Analyse en cours...";
+        var ct = Loading.Begin("Analyse en cours...");
+        var selectedCount = Math.Max(1, AllTasks.Count(t => t.IsSelected));
+        var done = 0;
 
         try
         {
@@ -91,14 +96,22 @@ public partial class CleanerPageViewModel : ObservableObject
                 }
 
                 taskVm.Status = CleaningTaskStatus.Scanning;
+                Loading.Message = $"Analyse : {taskVm.Task.DisplayName}";
                 try
                 {
-                    var result = await Task.Run(() => taskVm.Task.Scanner.ScanAsync());
+                    var result = await Task.Run(() => taskVm.Task.Scanner.ScanAsync(ct), ct);
                     taskVm.LastScanItems = result.Items;
                     taskVm.FoundItemsCount = result.Items.Count;
                     taskVm.FoundSizeBytes = result.TotalSizeBytes;
                     taskVm.Status = CleaningTaskStatus.Scanned;
                     taskVm.LastError = null;
+                    done++;
+                    Loading.Progress = done * 100.0 / selectedCount;
+                }
+                catch (OperationCanceledException)
+                {
+                    taskVm.ResetScanState();
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -112,8 +125,13 @@ public partial class CleanerPageViewModel : ObservableObject
             HasScanned = true;
             StatusMessage = $"Analyse terminée : {FormattedTotalRecoverable} récupérables.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Analyse arrêtée.";
+        }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
@@ -123,6 +141,9 @@ public partial class CleanerPageViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = SimulationMode ? "Simulation en cours..." : "Nettoyage en cours...";
+        var ct = Loading.Begin(StatusMessage, "Arrêter le nettoyage");
+        var toClean = Math.Max(1, AllTasks.Count(t => t.IsSelected && t.LastScanItems.Count > 0));
+        var cleaned = 0;
 
         try
         {
@@ -140,7 +161,9 @@ public partial class CleanerPageViewModel : ObservableObject
                 taskVm.Status = CleaningTaskStatus.Cleaning;
                 try
                 {
-                    var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode));
+                    var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode, ct), ct);
+                    cleaned++;
+                    Loading.Progress = cleaned * 100.0 / toClean;
                     freed += result.FreedBytes;
                     failedCount += result.FailedCount;
 
@@ -156,6 +179,10 @@ public partial class CleanerPageViewModel : ObservableObject
 
                     taskVm.Status = finalStatus;
                     taskVm.LastError = finalError;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -180,8 +207,13 @@ public partial class CleanerPageViewModel : ObservableObject
                 await _settings.SaveAsync();
             }
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Nettoyage arrêté.";
+        }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }

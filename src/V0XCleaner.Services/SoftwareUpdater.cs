@@ -102,9 +102,21 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
                 return (false, -1, string.Empty);
             }
 
-            var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            await process.WaitForExitAsync(cancellationToken);
-            return (true, process.ExitCode, await outputTask);
+            try
+            {
+                var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+                await process.WaitForExitAsync(cancellationToken);
+                return (true, process.ExitCode, await outputTask);
+            }
+            catch (OperationCanceledException)
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+
+                throw;
+            }
         }
         catch (System.ComponentModel.Win32Exception)
         {

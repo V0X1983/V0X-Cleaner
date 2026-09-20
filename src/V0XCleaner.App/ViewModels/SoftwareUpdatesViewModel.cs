@@ -24,6 +24,8 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
     private readonly ISoftwareUpdater _updater;
     private readonly ILogger<SoftwareUpdatesViewModel> _logger;
 
+    public ScanProgress Loading { get; } = new();
+
     public ObservableCollection<SoftwareUpdateItemViewModel> Updates { get; } = [];
 
     [ObservableProperty]
@@ -43,10 +45,11 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
     {
         IsBusy = true;
         StatusMessage = "Recherche des mises à jour (winget)...";
+        var ct = Loading.Begin("Recherche de mises à jour de logiciels...");
 
         try
         {
-            var scan = await Task.Run(() => _updater.ScanAsync());
+            var scan = await Task.Run(() => _updater.ScanAsync(ct), ct);
             Updates.Clear();
             foreach (var update in scan.Updates)
             {
@@ -57,6 +60,10 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
                 ? $"{Updates.Count} mise(s) à jour disponible(s)."
                 : "Tous vos logiciels sont à jour.");
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Recherche arrêtée.";
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la recherche de mises à jour.");
@@ -64,6 +71,7 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }

@@ -61,15 +61,20 @@ public partial class DuplicateFinderViewModel : ObservableObject
         }
 
         IsBusy = true;
+        var ct = Loading.Begin("Recherche de doublons en cours...");
         Groups.Clear();
         TotalWastedBytes = 0;
         SelectedBytes = 0;
 
-        var progress = new Progress<string>(message => StatusMessage = message);
+        var progress = new Progress<string>(message =>
+        {
+            StatusMessage = message;
+            Loading.Message = message;
+        });
 
         try
         {
-            var groups = await Task.Run(() => _finder.FindDuplicatesAsync(FolderPath, progress));
+            var groups = await Task.Run(() => _finder.FindDuplicatesAsync(FolderPath, progress, ct), ct);
 
             foreach (var group in groups)
             {
@@ -98,6 +103,10 @@ public partial class DuplicateFinderViewModel : ObservableObject
                 ? $"{groups.Count} groupe(s) de doublons — {FormattedTotalWasted} récupérables."
                 : "Aucun doublon trouvé.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Recherche arrêtée.";
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur pendant la recherche de doublons dans {Path}", FolderPath);
@@ -105,6 +114,7 @@ public partial class DuplicateFinderViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
@@ -157,6 +167,8 @@ public partial class DuplicateFinderViewModel : ObservableObject
 
         await ScanAsync();
     }
+
+    public ScanProgress Loading { get; } = new();
 
     private bool CanRun() => !IsBusy;
 

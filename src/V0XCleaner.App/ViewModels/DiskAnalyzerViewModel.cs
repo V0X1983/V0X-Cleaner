@@ -156,10 +156,11 @@ public partial class DiskAnalyzerViewModel : ObservableObject
 
         IsBusy = true;
         StatusMessage = "Analyse en cours...";
+        var ct = Loading.Begin("Analyse du dossier en cours...");
 
         try
         {
-            var result = await Task.Run(() => _analyzer.AnalyzeAsync(path));
+            var result = await Task.Run(() => _analyzer.AnalyzeAsync(path, ct), ct);
             CurrentPath = path;
 
             var maxSize = result.Count > 0 ? result.Max(n => n.SizeBytes) : 0;
@@ -173,6 +174,10 @@ public partial class DiskAnalyzerViewModel : ObservableObject
             var total = result.Sum(n => n.SizeBytes);
             StatusMessage = $"{result.Count} élément(s) — {ByteFormatter.Format(total)} au total.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Analyse arrêtée.";
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur pendant l'analyse de {Path}", path);
@@ -180,9 +185,12 @@ public partial class DiskAnalyzerViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
+
+    public ScanProgress Loading { get; } = new();
 
     private bool CanRun() => !IsBusy;
 

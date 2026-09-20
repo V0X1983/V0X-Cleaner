@@ -38,15 +38,18 @@ public partial class HealthCheckViewModel : ObservableObject
         _logger = logger;
     }
 
+    public ScanProgress Loading { get; } = new();
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task RunAsync()
     {
         IsBusy = true;
         StatusMessage = "Analyse en cours...";
+        var ct = Loading.Begin("Analyse de votre PC en cours...");
 
         try
         {
-            var result = await Task.Run(() => _healthCheck.RunAsync());
+            var result = await Task.Run(() => _healthCheck.RunAsync(ct), ct);
             OverallScore = result.OverallScore;
             Items.Clear();
             foreach (var item in result.Items)
@@ -56,6 +59,10 @@ public partial class HealthCheckViewModel : ObservableObject
 
             StatusMessage = $"Bilan terminé — score global : {OverallScore}/100.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Analyse arrêtée.";
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur pendant le bilan de santé.");
@@ -63,6 +70,7 @@ public partial class HealthCheckViewModel : ObservableObject
         }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }

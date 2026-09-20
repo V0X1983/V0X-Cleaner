@@ -1,7 +1,10 @@
-<UserControl x:Class="V0XCleaner.App.Views.SoftwareUpdatesView"
+<UserControl xmlns:controls="clr-namespace:V0XCleaner.App.Controls"
+             x:Class="V0XCleaner.App.Views.SoftwareUpdatesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels">
+    <Grid>
+
     <Grid Margin="32,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -43,5 +46,7 @@
         </ScrollViewer>
 
         <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" TextWrapping="Wrap" />
+    </Grid>
+    <controls:LoadingOverlay DataContext="{Binding Loading}" />
     </Grid>
 </UserControl>

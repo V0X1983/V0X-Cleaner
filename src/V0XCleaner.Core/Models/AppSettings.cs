@@ -24,6 +24,9 @@ public sealed class AppSettings
 
     public bool StartWithWindows { get; set; }
 
+    /// <summary>Identifiants Windows Update des pilotes que l'utilisateur a choisi d'ignorer.</summary>
+    public List<string> IgnoredDriverUpdateIds { get; set; } = [];
+
     /// <summary>Si vrai, les fichiers supprimés par le Nettoyeur/Doublons sont déplacés en quarantaine au lieu d'être effacés définitivement (voir IQuarantineService).</summary>
     public bool QuarantineEnabled { get; set; } = true;
 

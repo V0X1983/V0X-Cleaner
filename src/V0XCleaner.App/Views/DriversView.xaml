@@ -1,49 +1,137 @@
-<UserControl x:Class="V0XCleaner.App.Views.DriversView"
+<UserControl xmlns:controls="clr-namespace:V0XCleaner.App.Controls"
+             x:Class="V0XCleaner.App.Views.DriversView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels">
-    <Grid Margin="32,24">
+    <UserControl.Resources>
+        <Style x:Key="TabStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource BrushTextSecondary}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Root" Padding="16,9" CornerRadius="6,6,0,0" BorderThickness="1,1,1,0"
+                                BorderBrush="Transparent" Background="Transparent">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource BrushSurface}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BrushBorder}" />
+                                <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+
+    <Grid Margin="32,24,32,20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Mise à jour de pilotes" FontSize="24" FontWeight="Bold" />
-            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Liste vos pilotes installés (version, date). Par sécurité, V0X Cleaner n'installe aucun pilote lui-même : utilisez Windows Update pour les mises à jour authentiques et signées." />
+        <TextBlock Grid.Row="0" Text="Mise à jour de pilotes" FontSize="24" FontWeight="Bold" Margin="0,0,0,12" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding ObsoleteTabTitle}" IsChecked="{Binding IsObsoleteTab}" />
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding UpToDateTabTitle}" IsChecked="{Binding IsUpToDateTab}" />
+            <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding IgnoredTabTitle}" IsChecked="{Binding IsIgnoredTab}" />
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
-            <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding ScanCommand}" MinWidth="110" Margin="0,0,12,0" />
-            <Button Content="Ouvrir Windows Update" Command="{Binding OpenWindowsUpdateCommand}" />
-        </StackPanel>
+        <Border Grid.Row="2" BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0" Padding="0,16,0,8">
+            <StackPanel>
+                <TextBlock Text="{Binding Headline}" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                           Text="Pilotes signés proposés par Windows Update. Cochez ceux à installer ; ignorez ceux que vous voulez conserver tels quels." />
+            </StackPanel>
+        </Border>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Drivers}">
+        <Grid Grid.Row="3" Margin="0,8,0,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="130" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="110" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="Pilotes" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="2" Text="Version" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="3" Text="Publiée" Foreground="{StaticResource BrushTextSecondary}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:DriverItemViewModel}">
-                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*" />
-                                    <ColumnDefinition Width="1.4*" />
-                                    <ColumnDefinition Width="90" />
-                                    <ColumnDefinition Width="130" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding DeviceName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding DeviceName}" />
-                                <TextBlock Grid.Column="1" Text="{Binding Details}" Foreground="{StaticResource BrushTextSecondary}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Grid.Column="2" Text="{Binding DateText}" Foreground="{StaticResource BrushTextSecondary}" />
-                                <TextBlock Grid.Column="3" Text="{Binding DeviceClass}" Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" />
-                            </Grid>
-                        </Border>
+                    <DataTemplate DataType="{x:Type vm:DriverGroupViewModel}">
+                        <StackPanel>
+                            <Border Background="{StaticResource BrushSurface}" Padding="0,9" Margin="0,4,0,0" CornerRadius="6">
+                                <StackPanel Orientation="Horizontal" Margin="8,0">
+                                    <CheckBox IsChecked="{Binding IsChecked}" IsThreeState="True" VerticalAlignment="Center" Margin="0,0,12,0"
+                                              Visibility="{Binding ShowCheckbox, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <ItemsControl ItemsSource="{Binding Rows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:DriverRowViewModel}">
+                                        <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,0,0,1" Padding="8,9">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="28" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="130" />
+                                                    <ColumnDefinition Width="110" />
+                                                    <ColumnDefinition Width="110" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center"
+                                                          Visibility="{Binding Selectable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Title}" Margin="0,0,8,0" />
+                                                <TextBlock Grid.Column="2" Text="{Binding VersionText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="3" Text="{Binding DateText}" VerticalAlignment="Center" />
+                                                <Button Grid.Column="4" Content="{Binding ActionLabel}" Padding="8,3" FontSize="11" HorizontalAlignment="Right"
+                                                        Visibility="{Binding ActionLabel, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
+                                                        Command="{Binding DataContext.RowActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+        <Border Grid.Row="5" Margin="0,12,0,0" Padding="16,12" CornerRadius="8" Background="{StaticResource BrushSurface}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Mise à jour sélectionnée" Style="{StaticResource PrimaryButtonStyle}"
+                        Click="InstallButton_Click" IsEnabled="{Binding HasSelection}" />
+                <Button DockPanel.Dock="Right" Content="Analyser à nouveau" Command="{Binding ScanCommand}" Margin="0,0,12,0" />
+                <Button DockPanel.Dock="Right" Content="Windows Update" Command="{Binding OpenWindowsUpdateCommand}" Margin="0,0,12,0" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SelectionText}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding LastScanText}" Foreground="{StaticResource BrushTextSecondary}" FontSize="12" />
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushAccent}" FontSize="12" TextWrapping="Wrap"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+    <controls:LoadingOverlay DataContext="{Binding Loading}" />
     </Grid>
 </UserControl>

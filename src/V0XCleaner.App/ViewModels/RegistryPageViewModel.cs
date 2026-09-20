@@ -12,6 +12,8 @@ public partial class RegistryPageViewModel : ObservableObject
     private readonly IRegistryBackupService _backupService;
     private readonly ILogger<RegistryPageViewModel> _logger;
 
+    public ScanProgress Loading { get; } = new();
+
     public ObservableCollection<CleaningSectionViewModel> Groups { get; } = [];
 
     public ObservableCollection<string> AvailableBackups { get; } = [];
@@ -73,6 +75,9 @@ public partial class RegistryPageViewModel : ObservableObject
         IsBusy = true;
         HasScanned = false;
         StatusMessage = "Analyse du registre en cours...";
+        var ct = Loading.Begin("Analyse du registre en cours...");
+        var selectedCount = Math.Max(1, AllTasks.Count(t => t.IsSelected));
+        var done = 0;
 
         try
         {
@@ -85,14 +90,22 @@ public partial class RegistryPageViewModel : ObservableObject
                 }
 
                 taskVm.Status = CleaningTaskStatus.Scanning;
+                Loading.Message = $"Analyse : {taskVm.Task.DisplayName}";
                 try
                 {
-                    var result = await Task.Run(() => taskVm.Task.Scanner.ScanAsync());
+                    var result = await Task.Run(() => taskVm.Task.Scanner.ScanAsync(ct), ct);
                     taskVm.LastScanItems = result.Items;
                     taskVm.FoundItemsCount = result.Items.Count;
                     taskVm.FoundSizeBytes = 0;
                     taskVm.Status = CleaningTaskStatus.Scanned;
                     taskVm.LastError = null;
+                    done++;
+                    Loading.Progress = done * 100.0 / selectedCount;
+                }
+                catch (OperationCanceledException)
+                {
+                    taskVm.ResetScanState();
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -108,8 +121,13 @@ public partial class RegistryPageViewModel : ObservableObject
                 ? $"Analyse terminée : {TotalIssuesFound} problème(s) trouvé(s)."
                 : "Analyse terminée : aucun problème trouvé.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Analyse arrêtée.";
+        }
         finally
         {
+            Loading.End();
             IsBusy = false;
         }
     }
