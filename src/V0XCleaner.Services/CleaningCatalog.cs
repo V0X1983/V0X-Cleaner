@@ -352,7 +352,9 @@ public sealed class CleaningCatalog(
                 Key = definition.Key,
                 DisplayName = definition.DisplayName,
                 Description = definition.Description,
-                Section = CleaningSection.ThirdPartyApplications,
+                Section = string.Equals(definition.Section, "cloud", StringComparison.OrdinalIgnoreCase)
+                    ? CleaningSection.Cloud
+                    : CleaningSection.ThirdPartyApplications,
                 Category = CleanupCategory.ThirdPartyApplication,
                 Scanner = new PathPatternScanner(definition.Key, CleanupCategory.ThirdPartyApplication, definition.Patterns),
                 Cleaner = NewFileDeletionCleaner(),

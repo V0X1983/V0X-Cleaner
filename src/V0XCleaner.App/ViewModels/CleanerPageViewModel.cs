@@ -67,6 +67,7 @@ public partial class CleanerPageViewModel : ObservableObject
         CleaningSection.System => "Système",
         CleaningSection.Browsers => "Navigateurs",
         CleaningSection.ThirdPartyApplications => "Applications tierces",
+        CleaningSection.Cloud => "Stockage cloud",
         _ => section.ToString()
     };
 

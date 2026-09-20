@@ -37,6 +37,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJunkEstimator, JunkEstimator>();
         services.AddSingleton<IMemoryOptimizer, MemoryOptimizer>();
         services.AddSingleton<IHealthCheckService, HealthCheckService>();
+        services.AddSingleton<ISoftwareUpdater, SoftwareUpdater>();
+        services.AddSingleton<IDriverCatalog, DriverCatalog>();
+        services.AddSingleton<IProcessOptimizer, ProcessOptimizer>();
 
         return services;
     }

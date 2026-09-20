@@ -1,0 +1,49 @@
+<UserControl x:Class="V0XCleaner.App.Views.DriversView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels">
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Mise à jour de pilotes" FontSize="24" FontWeight="Bold" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Liste vos pilotes installés (version, date). Par sécurité, V0X Cleaner n'installe aucun pilote lui-même : utilisez Windows Update pour les mises à jour authentiques et signées." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+            <Button Content="Analyser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding ScanCommand}" MinWidth="110" Margin="0,0,12,0" />
+            <Button Content="Ouvrir Windows Update" Command="{Binding OpenWindowsUpdateCommand}" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Drivers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:DriverItemViewModel}">
+                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="1.4*" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="130" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding DeviceName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding DeviceName}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Details}" Foreground="{StaticResource BrushTextSecondary}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="2" Text="{Binding DateText}" Foreground="{StaticResource BrushTextSecondary}" />
+                                <TextBlock Grid.Column="3" Text="{Binding DeviceClass}" Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+    </Grid>
+</UserControl>

@@ -14,6 +14,7 @@ public partial class MainWindowViewModel : ObservableObject
         new NavigationItem { Key = "registry", Title = "Registre", Glyph = "" },
         new NavigationItem { Key = "tools", Title = "Outils", Glyph = "" },
         new NavigationItem { Key = "options", Title = "Options", Glyph = "" },
+        new NavigationItem { Key = "help", Title = "Aide", Glyph = "" },
     ];
 
     [ObservableProperty]
@@ -70,6 +71,7 @@ public partial class MainWindowViewModel : ObservableObject
             "registry" => (object)_serviceProvider.GetRequiredService<RegistryPageViewModel>(),
             "tools" => (object)_serviceProvider.GetRequiredService<ToolsPageViewModel>(),
             "options" => (object)_serviceProvider.GetRequiredService<OptionsViewModel>(),
+            "help" => (object)_serviceProvider.GetRequiredService<HelpViewModel>(),
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, null)
         };
 

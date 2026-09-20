@@ -1,5 +1,11 @@
 # Changelog
 
+## Non publié
+
+- Nouvelles pages : Mise à jour de logiciels (winget), Mise à jour de pilotes (liste + Windows Update), Optimiseur de performances, Aide.
+- Section Stockage cloud dans le Nettoyeur (journaux et caches OneDrive, Google Drive, Dropbox).
+- Thème appliqué à tous les contrôles.
+
 ## 0.1.0
 
 - Nettoyeur système, navigateurs et applications tierces (simulation, exclusions).

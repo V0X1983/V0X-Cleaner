@@ -12,5 +12,7 @@ public sealed class AppDefinition
     public required string DisplayName { get; init; }
     public required string Description { get; init; }
     public required List<string> Patterns { get; init; }
+    /// <summary>"cloud" pour ranger la définition dans la section Stockage cloud du Nettoyeur ; vide = Applications tierces.</summary>
+    public string? Section { get; init; }
     public bool SelectedByDefault { get; init; } = true;
 }

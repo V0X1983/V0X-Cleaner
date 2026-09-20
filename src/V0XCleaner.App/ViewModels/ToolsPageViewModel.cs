@@ -18,7 +18,10 @@ public partial class ToolsPageViewModel : ObservableObject
         new NavigationItem { Key = "duplicates", Title = "Doublons", Glyph = "" },
         new NavigationItem { Key = "drive-wiper", Title = "Effaceur de disque", Glyph = "" },
         new NavigationItem { Key = "system-restore", Title = "Restauration système", Glyph = "" },
-        new NavigationItem { Key = "quarantine", Title = "Corbeille de sécurité", Glyph = "" }
+        new NavigationItem { Key = "quarantine", Title = "Corbeille de sécurité", Glyph = "" },
+        new NavigationItem { Key = "software-updates", Title = "Mise à jour de logiciels", Glyph = "" },
+        new NavigationItem { Key = "drivers", Title = "Mise à jour de pilotes", Glyph = "" },
+        new NavigationItem { Key = "optimizer", Title = "Optimiseur de performances", Glyph = "" }
     ];
 
     [ObservableProperty]
@@ -35,6 +38,9 @@ public partial class ToolsPageViewModel : ObservableObject
     private readonly DriveWiperViewModel _driveWiperViewModel;
     private readonly SystemRestoreViewModel _systemRestoreViewModel;
     private readonly QuarantineViewModel _quarantineViewModel;
+    private readonly SoftwareUpdatesViewModel _softwareUpdatesViewModel;
+    private readonly DriversViewModel _driversViewModel;
+    private readonly OptimizerViewModel _optimizerViewModel;
 
     public ToolsPageViewModel(
         HealthCheckViewModel healthCheckViewModel,
@@ -44,7 +50,10 @@ public partial class ToolsPageViewModel : ObservableObject
         DuplicateFinderViewModel duplicateFinderViewModel,
         DriveWiperViewModel driveWiperViewModel,
         SystemRestoreViewModel systemRestoreViewModel,
-        QuarantineViewModel quarantineViewModel)
+        QuarantineViewModel quarantineViewModel,
+        SoftwareUpdatesViewModel softwareUpdatesViewModel,
+        DriversViewModel driversViewModel,
+        OptimizerViewModel optimizerViewModel)
     {
         _healthCheckViewModel = healthCheckViewModel;
         _startupManagerViewModel = startupManagerViewModel;
@@ -54,6 +63,9 @@ public partial class ToolsPageViewModel : ObservableObject
         _driveWiperViewModel = driveWiperViewModel;
         _systemRestoreViewModel = systemRestoreViewModel;
         _quarantineViewModel = quarantineViewModel;
+        _softwareUpdatesViewModel = softwareUpdatesViewModel;
+        _driversViewModel = driversViewModel;
+        _optimizerViewModel = optimizerViewModel;
 
         _selectedToolItem = ToolItems[0];
         _currentToolPage = _healthCheckViewModel;
@@ -71,6 +83,9 @@ public partial class ToolsPageViewModel : ObservableObject
             "drive-wiper" => _driveWiperViewModel,
             "system-restore" => _systemRestoreViewModel,
             "quarantine" => _quarantineViewModel,
+            "software-updates" => _softwareUpdatesViewModel,
+            "drivers" => _driversViewModel,
+            "optimizer" => _optimizerViewModel,
             _ => CurrentToolPage
         };
     }

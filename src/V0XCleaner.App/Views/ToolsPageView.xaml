@@ -38,6 +38,18 @@
         <DataTemplate DataType="{x:Type vm:QuarantineViewModel}">
             <views:QuarantineView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SoftwareUpdatesViewModel}">
+            <views:SoftwareUpdatesView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DriversViewModel}">
+            <views:DriversView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:OptimizerViewModel}">
+            <views:OptimizerView />
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>

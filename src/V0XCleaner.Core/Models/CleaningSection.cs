@@ -6,5 +6,6 @@ public enum CleaningSection
     System,
     Browsers,
     ThirdPartyApplications,
+    Cloud,
     Registry
 }

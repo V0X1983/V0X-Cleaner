@@ -49,6 +49,10 @@ public partial class App : Application
                 services.AddSingleton<DriveWiperViewModel>();
                 services.AddSingleton<SystemRestoreViewModel>();
                 services.AddSingleton<QuarantineViewModel>();
+                services.AddSingleton<SoftwareUpdatesViewModel>();
+                services.AddSingleton<DriversViewModel>();
+                services.AddSingleton<OptimizerViewModel>();
+                services.AddSingleton<HelpViewModel>();
                 services.AddSingleton<HealthCheckViewModel>();
                 services.AddSingleton<ToolsPageViewModel>();
                 services.AddSingleton<OptionsViewModel>();

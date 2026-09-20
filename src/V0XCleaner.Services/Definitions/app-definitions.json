@@ -73,5 +73,47 @@
       "%LocalAppData%\\pip\\Cache"
     ],
     "selectedByDefault": false
+  },
+  {
+    "key": "cloud-onedrive-logs",
+    "displayName": "Journaux OneDrive",
+    "description": "Fichiers journaux de synchronisation OneDrive (ne touche pas à vos fichiers synchronisés).",
+    "patterns": [
+      "%LocalAppData%\\Microsoft\\OneDrive\\logs",
+      "%LocalAppData%\\Microsoft\\OneDrive\\setup\\logs"
+    ],
+    "section": "cloud",
+    "selectedByDefault": true
+  },
+  {
+    "key": "cloud-gdrive-logs",
+    "displayName": "Journaux Google Drive",
+    "description": "Journaux de Google Drive pour ordinateur (ne touche pas à vos fichiers).",
+    "patterns": [
+      "%LocalAppData%\\Google\\DriveFS\\Logs"
+    ],
+    "section": "cloud",
+    "selectedByDefault": true
+  },
+  {
+    "key": "cloud-gdrive-cache",
+    "displayName": "Cache hors ligne Google Drive",
+    "description": "Copies locales mises en cache par Google Drive ; elles seront retéléchargées au besoin.",
+    "patterns": [
+      "%LocalAppData%\\Google\\DriveFS\\*\\content_cache"
+    ],
+    "section": "cloud",
+    "selectedByDefault": false
+  },
+  {
+    "key": "cloud-dropbox-logs",
+    "displayName": "Journaux Dropbox",
+    "description": "Journaux et rapports d'erreurs de Dropbox (ne touche pas à vos fichiers).",
+    "patterns": [
+      "%LocalAppData%\\Dropbox\\logs",
+      "%AppData%\\Dropbox\\logs"
+    ],
+    "section": "cloud",
+    "selectedByDefault": true
   }
 ]

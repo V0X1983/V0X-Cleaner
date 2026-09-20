@@ -27,6 +27,10 @@
             <views:ToolsPageView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:HelpViewModel}">
+            <views:HelpView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:OptionsViewModel}">
             <views:OptionsView />
         </DataTemplate>
