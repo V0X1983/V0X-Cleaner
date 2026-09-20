@@ -1,0 +1,84 @@
+<UserControl x:Class="V0XCleaner.App.Views.DuplicateFinderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:V0XCleaner.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Doublons" FontSize="24" FontWeight="Bold" />
+            <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Recherche les fichiers strictement identiques (même taille, même contenu) dans un dossier. Une copie de chaque groupe reste cochée par défaut : décochez-la aussi si vous voulez tout supprimer." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" Padding="8,4"
+                     Background="{StaticResource BrushSurface}" Foreground="{StaticResource BrushTextPrimary}"
+                     BorderBrush="{StaticResource BrushBorder}" Margin="0,0,12,0" />
+
+            <Button Grid.Column="1" Content="Parcourir..." Padding="12,6" Click="BrowseButton_Click" Margin="0,0,12,0" />
+
+            <Button Grid.Column="2" Content="Analyser" Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding ScanCommand}" MinWidth="110" />
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Supprimer les fichiers cochés" Click="DeleteSelectedButton_Click"
+                    IsEnabled="{Binding CanDeleteNow}" Padding="12,6" />
+            <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Foreground="{StaticResource BrushAccent}" FontWeight="SemiBold"
+                       Text="{Binding FormattedSelected, StringFormat='Sélectionné : {0}'}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:DuplicateGroupViewModel}">
+                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,10" Padding="12,10">
+                            <StackPanel>
+                                <TextBlock Margin="0,0,0,6">
+                                    <Run Text="{Binding Entries.Count, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <Run Text=" copies · " Foreground="{StaticResource BrushTextSecondary}" />
+                                    <Run Text="{Binding FormattedSize, Mode=OneWay}" Foreground="{StaticResource BrushTextSecondary}" />
+                                    <Run Text=" chacune · gaspillage : " Foreground="{StaticResource BrushTextSecondary}" />
+                                    <Run Text="{Binding FormattedWasted, Mode=OneWay}" Foreground="{StaticResource BrushAccent}" FontWeight="SemiBold" />
+                                </TextBlock>
+
+                                <ItemsControl ItemsSource="{Binding Entries}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:DuplicateFileEntryViewModel}">
+                                            <CheckBox IsChecked="{Binding IsSelected}" Margin="0,2" Content="{Binding FilePath}"
+                                                      Foreground="{StaticResource BrushTextPrimary}" FontSize="12" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+    </Grid>
+</UserControl>

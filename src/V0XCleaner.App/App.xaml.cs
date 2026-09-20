@@ -37,6 +37,10 @@ public partial class App : Application
                 services.AddSingleton<RegistryPageViewModel>();
                 services.AddSingleton<StartupManagerViewModel>();
                 services.AddSingleton<UninstallManagerViewModel>();
+                services.AddSingleton<DiskAnalyzerViewModel>();
+                services.AddSingleton<DuplicateFinderViewModel>();
+                services.AddSingleton<DriveWiperViewModel>();
+                services.AddSingleton<SystemRestoreViewModel>();
                 services.AddSingleton<ToolsPageViewModel>();
             })
             .Build();

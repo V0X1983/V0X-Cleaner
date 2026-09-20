@@ -23,6 +23,11 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IInstalledProgramsCatalog, InstalledProgramsCatalog>();
 
+        services.AddSingleton<IDiskAnalyzer, DiskAnalyzer>();
+        services.AddSingleton<IDuplicateFileFinder, DuplicateFileFinder>();
+        services.AddSingleton<IDriveWiper, DriveWiper>();
+        services.AddSingleton<ISystemRestoreManager, SystemRestoreManager>();
+
         return services;
     }
 }

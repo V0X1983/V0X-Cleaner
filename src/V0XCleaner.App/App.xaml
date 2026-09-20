@@ -15,6 +15,7 @@
             <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <sys:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <helpers:FractionToWidthConverter x:Key="FractionToWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

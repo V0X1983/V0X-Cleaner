@@ -14,6 +14,22 @@
         <DataTemplate DataType="{x:Type vm:UninstallManagerViewModel}">
             <views:UninstallManagerView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DiskAnalyzerViewModel}">
+            <views:DiskAnalyzerView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DuplicateFinderViewModel}">
+            <views:DuplicateFinderView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DriveWiperViewModel}">
+            <views:DriveWiperView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SystemRestoreViewModel}">
+            <views:SystemRestoreView />
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
