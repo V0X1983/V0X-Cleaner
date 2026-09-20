@@ -3,6 +3,33 @@
 
     <!-- Styles implicites des contrôles standard, basés sur les brushes du thème actif (DynamicResource : bascule clair/sombre). -->
 
+    <!-- Onglets à bascule (RadioButton) : Pilotes, Optimiseur de performances. -->
+    <Style x:Key="TabStyle" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource BrushTextSecondary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,4,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Root" Padding="16,9" CornerRadius="6,6,0,0" BorderThickness="1,1,1,0"
+                            BorderBrush="Transparent" Background="Transparent">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource BrushSurface}" />
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BrushBorder}" />
+                            <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="ToolTip">
         <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />

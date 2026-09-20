@@ -175,6 +175,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        // Ne jamais laisser une application gelée après notre fermeture.
+        _host?.Services.GetService<IProcessOptimizer>()?.ResumeAll();
         _trayIconService?.Dispose();
         _host?.Dispose();
         Log.CloseAndFlush();

@@ -22,6 +22,9 @@ public sealed class AppSettings
     /// <summary>Chemins (fichier ou dossier) jamais nettoyés.</summary>
     public List<string> ExcludedPaths { get; set; } = [];
 
+    /// <summary>Noms de processus exclus de l'Optimiseur de performances (jamais proposés à la mise en veille).</summary>
+    public List<string> ExcludedProcessNames { get; set; } = [];
+
     public bool StartWithWindows { get; set; }
 
     /// <summary>Identifiants Windows Update des pilotes que l'utilisateur a choisi d'ignorer.</summary>
