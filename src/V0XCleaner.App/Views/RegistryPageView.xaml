@@ -8,7 +8,7 @@
              mc:Ignorable="d">
     <Grid>
 
-    <Grid Margin="32,24">
+    <Grid Margin="32,24,32,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -17,32 +17,13 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
             <TextBlock Text="Registre" FontSize="24" FontWeight="Bold" />
             <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Recherche les entrées de registre orphelines (extensions, ActiveX, chemins d'application, DLL partagées, polices, cache MUI, désinstalleurs, raccourcis). Une sauvegarde .reg est créée automatiquement avant toute réparation. Certaines réparations (clés HKEY_LOCAL_MACHINE) peuvent nécessiter de lancer V0X Cleaner en tant qu'administrateur." />
+                       Text="Recherche les entrées de registre orphelines. Une sauvegarde .reg est créée automatiquement avant toute réparation. Certaines réparations (clés HKEY_LOCAL_MACHINE) peuvent nécessiter de lancer V0X Cleaner en tant qu'administrateur." />
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0" Content="Analyser" Style="{StaticResource PrimaryButtonStyle}"
-                    Command="{Binding AnalyzeCommand}" Margin="0,0,12,0" MinWidth="120" />
-
-            <Button Grid.Column="1" Content="Réparer" Style="{StaticResource PrimaryButtonStyle}"
-                    IsEnabled="{Binding CanRepairNow}" Click="RepairButton_Click" MinWidth="120" />
-
-            <CheckBox Grid.Column="3" Content="Mode simulation (aperçu sans modification)"
-                      IsChecked="{Binding SimulationMode}" VerticalAlignment="Center"
-                      Foreground="{StaticResource BrushTextSecondary}" />
-        </Grid>
-
-        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" CornerRadius="6" Padding="12" Margin="0,0,0,16">
+        <Border Grid.Row="1" Background="{StaticResource BrushSurface}" CornerRadius="6" Padding="12" Margin="0,0,0,20">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -67,40 +48,47 @@
             </Grid>
         </Border>
 
+        <!-- En-têtes de colonnes -->
+        <Grid Grid.Row="2" Margin="12,0,29,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="110" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="Catégorie" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="2" Text="Éléments" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+        </Grid>
+
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:CleaningSectionViewModel}">
                         <StackPanel Margin="0,0,0,20">
-                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
-                                       Foreground="{StaticResource BrushAccent}" Margin="0,0,0,8" />
+                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource BrushAccent}" Margin="12,0,0,10" />
                             <ItemsControl ItemsSource="{Binding Tasks}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:CleaningTaskViewModel}">
-                                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10">
+                                        <Border Background="{StaticResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,12">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="36" />
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="110" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}"
-                                                          VerticalAlignment="Top" Margin="0,2,12,0" />
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center" />
 
-                                                <StackPanel Grid.Column="1">
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                                     <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                                                    <TextBlock Text="{Binding Description}" FontSize="11"
-                                                               Foreground="{StaticResource BrushTextSecondary}"
+                                                    <TextBlock Text="{Binding Description}" Foreground="{StaticResource BrushTextSecondary}"
                                                                TextWrapping="Wrap" Margin="0,2,0,0" />
-                                                    <TextBlock Text="{Binding LastError}" FontSize="11"
-                                                               Foreground="{StaticResource BrushDanger}"
+                                                    <TextBlock Text="{Binding LastError}" Foreground="{StaticResource BrushDanger}"
                                                                TextWrapping="Wrap" Margin="0,2,0,0"
                                                                Visibility="{Binding LastError, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
                                                 </StackPanel>
 
-                                                <TextBlock Grid.Column="2" VerticalAlignment="Top"
-                                                           Foreground="{StaticResource BrushTextSecondary}"
+                                                <TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                            Text="{Binding FoundItemsCount, StringFormat='{}{0} élément(s)'}" />
                                             </Grid>
                                         </Border>
@@ -113,15 +101,22 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <Grid Grid.Row="4" Margin="0,16,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Text="{Binding TotalIssuesFound, StringFormat='Problèmes trouvés : {0}'}"
-                       FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" VerticalAlignment="Center" />
-        </Grid>
+        <!-- Barre du bas : état et problèmes trouvés à gauche, actions à droite -->
+        <Border Grid.Row="4" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushBorder}" Margin="0,16,0,0" Padding="0,16,0,0">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox Content="Mode simulation (aperçu sans modification)" IsChecked="{Binding SimulationMode}"
+                              VerticalAlignment="Center" Margin="0,0,20,0" Foreground="{StaticResource BrushTextSecondary}" />
+                    <Button Content="Analyser" Command="{Binding AnalyzeCommand}" MinWidth="110" Margin="0,0,12,0" />
+                    <Button Content="Réparer" Style="{StaticResource PrimaryButtonStyle}" IsEnabled="{Binding CanRepairNow}"
+                            Click="RepairButton_Click" MinWidth="120" />
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding TotalIssuesFound, StringFormat='Problèmes trouvés : {0}'}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" TextWrapping="Wrap" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
     </Grid>
     <controls:LoadingOverlay DataContext="{Binding Loading}" />
     </Grid>

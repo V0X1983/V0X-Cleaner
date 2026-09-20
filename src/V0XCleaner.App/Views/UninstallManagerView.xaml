@@ -5,45 +5,48 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <Grid Margin="32,24">
+    <Grid Margin="32,24,32,20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Désinstalleur" FontSize="24" FontWeight="Bold" />
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Programme de désinstallation" FontSize="24" FontWeight="Bold" />
             <TextBlock Foreground="{StaticResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
                        Text="Programmes classiques et applications du Microsoft Store installés sur cet ordinateur." />
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" MinWidth="120" />
                 <ColumnDefinition Width="170" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}"
-                    Command="{Binding RefreshCommand}" MinWidth="110" Margin="0,0,12,0" />
-
-            <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                      VerticalContentAlignment="Center" Padding="8,4"
                      Background="{StaticResource BrushSurface}" Foreground="{StaticResource BrushTextPrimary}"
-                     BorderBrush="{StaticResource BrushBorder}" />
+                     BorderBrush="{StaticResource BrushBorder}" ToolTip="Rechercher un programme" />
 
-            <ComboBox Grid.Column="2" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption}"
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption}"
                       Margin="12,0,0,0" VerticalContentAlignment="Center" />
-
-            <Button Grid.Column="4" Content="Exporter en CSV" Click="ExportCsvButton_Click"
-                    Margin="12,0,0,0" Padding="14,6" />
         </Grid>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <!-- En-têtes de colonnes -->
+        <Grid Grid.Row="2" Margin="12,0,29,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="210" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Programme" Foreground="{StaticResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="1" Text="Taille" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding DisplayedPrograms}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:InstalledProgramViewModel}">
@@ -84,6 +87,15 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" Margin="0,16,0,0" />
+        <!-- Barre du bas -->
+        <Border Grid.Row="4" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushBorder}" Margin="0,16,0,0" Padding="0,16,0,0">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Exporter en CSV" Click="ExportCsvButton_Click" Margin="0,0,12,0" Padding="14,6" />
+                    <Button Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RefreshCommand}" MinWidth="110" />
+                </StackPanel>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource BrushTextSecondary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>
