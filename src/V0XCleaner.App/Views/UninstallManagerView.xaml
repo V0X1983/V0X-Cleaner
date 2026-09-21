@@ -57,6 +57,10 @@
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <Button Content="Désinstaller" Padding="8,3" FontSize="11" Margin="0,0,6,0"
                                                 IsEnabled="{Binding CanUninstall}" Click="UninstallButton_Click" Tag="{Binding}" />
+                                        <Button Content="Déplacer" Padding="8,3" FontSize="11" Margin="0,0,6,0"
+                                                ToolTip="Déplacer le dossier d'installation vers un autre dossier ou disque (une jonction est laissée à l'ancien emplacement)"
+                                                Visibility="{Binding CanMove, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Click="MoveButton_Click" Tag="{Binding}" />
                                         <Button Content="Forcer" Padding="8,3" FontSize="11"
                                                 ToolTip="Supprimer directement le dossier et l'entrée de registre, sans lancer le désinstalleur"
                                                 Visibility="{Binding IsWin32, Converter={StaticResource BooleanToVisibilityConverter}}"

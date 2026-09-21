@@ -66,6 +66,8 @@ public partial class InstalledProgramViewModel(InstalledProgram program) : Obser
 
     public bool IsWin32 => Program.Kind == InstalledProgramKind.Win32;
 
+    public bool CanMove => IsWin32 && !string.IsNullOrWhiteSpace(Program.InstallLocation);
+
     [ObservableProperty]
     private bool _isBusy;
 

@@ -125,6 +125,27 @@ public partial class UninstallManagerViewModel : ObservableObject
         await RefreshAsync();
     }
 
+    public async Task MoveProgramAsync(InstalledProgramViewModel programVm, string destinationParentFolder)
+    {
+        programVm.IsBusy = true;
+        programVm.StatusMessage = "Déplacement en cours...";
+
+        try
+        {
+            var result = await Task.Run(() => _catalog.MoveAsync(programVm.Program, destinationParentFolder));
+            programVm.StatusMessage = result.Message;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors du déplacement de {Name}", programVm.DisplayName);
+            programVm.StatusMessage = "Erreur inattendue pendant le déplacement.";
+        }
+        finally
+        {
+            programVm.IsBusy = false;
+        }
+    }
+
     public string BuildCsvExport()
     {
         var sb = new StringBuilder();

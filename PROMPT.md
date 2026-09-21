@@ -101,6 +101,7 @@ Mise à jour de logiciels (winget) — points délicats : (1) winget n'affiche A
 - Lister les programmes installés (registre `Uninstall`, Windows Apps/UWP via PackageManager).
 - Désinstallation simple + option "désinstallation forcée" (suppression des résidus registre/dossiers si le désinstalleur échoue).
 - Tri, recherche, export de la liste (CSV).
+- Déplacement d'un logiciel (Win32) vers un autre dossier/disque : sauvegarde `.reg`, déplacement du dossier d'installation, jonction laissée à l'ancien emplacement, mise à jour de `InstallLocation`.
 
 **Livrable :** gestionnaire de désinstallation fonctionnel.
 

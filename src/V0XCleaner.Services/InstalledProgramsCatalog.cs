@@ -122,6 +122,136 @@ public sealed class InstalledProgramsCatalog(
         return new UninstallOutcome(overallSuccess, string.Join(' ', messages));
     }
 
+    public async Task<UninstallOutcome> MoveAsync(InstalledProgram program, string destinationParentFolder, CancellationToken cancellationToken = default)
+    {
+        if (program.Kind != InstalledProgramKind.Win32 || string.IsNullOrWhiteSpace(program.InstallLocation))
+        {
+            return new UninstallOutcome(false, "Le déplacement ne s'applique qu'aux programmes classiques dont le dossier d'installation est connu.");
+        }
+
+        string source;
+        string destination;
+        try
+        {
+            source = Path.GetFullPath(program.InstallLocation.Trim().Trim('"')).TrimEnd('\\');
+            destination = Path.Combine(Path.GetFullPath(destinationParentFolder), Path.GetFileName(source));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return new UninstallOutcome(false, $"Chemin invalide : {ex.Message}");
+        }
+
+        if (!Directory.Exists(source))
+        {
+            return new UninstallOutcome(false, "Le dossier d'installation n'existe plus.");
+        }
+
+        if (new DirectoryInfo(source).Attributes.HasFlag(FileAttributes.ReparsePoint))
+        {
+            return new UninstallOutcome(false, "Ce programme a déjà été déplacé (le dossier est une jonction).");
+        }
+
+        if (!pathGuard.IsSafeToDelete(source, out var reason))
+        {
+            return new UninstallOutcome(false, $"Dossier protégé, déplacement refusé ({reason}).");
+        }
+
+        if (destination.StartsWith(source + "\\", StringComparison.OrdinalIgnoreCase) || string.Equals(destination, source, StringComparison.OrdinalIgnoreCase))
+        {
+            return new UninstallOutcome(false, "La destination ne peut pas se trouver dans le dossier source.");
+        }
+
+        if (Directory.Exists(destination) || File.Exists(destination))
+        {
+            return new UninstallOutcome(false, $"\"{destination}\" existe déjà.");
+        }
+
+        var (hivePrefix, subKeyPath) = RegistryPathHelper.SplitKeyId(program.Id);
+        var backupPath = await backupService.BackupKeysAsync([program.Id], cancellationToken);
+        if (backupPath is null)
+        {
+            return new UninstallOutcome(false, "Sauvegarde du registre impossible : déplacement annulé par précaution.");
+        }
+
+        try
+        {
+            Directory.CreateDirectory(destinationParentFolder);
+            await Task.Run(() => MoveDirectory(source, destination, cancellationToken), cancellationToken);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Échec du déplacement de {Source} vers {Destination}", source, destination);
+            return new UninstallOutcome(false, $"Échec du déplacement : {ex.Message}");
+        }
+
+        // Jonction à l'ancien emplacement : les raccourcis, le désinstalleur et les autres références restent valides.
+        var (linked, _, linkErr, _) = await PowerShellRunner.RunAsync(
+            $"New-Item -ItemType Junction -Path '{EscapeSingleQuotes(source)}' -Target '{EscapeSingleQuotes(destination)}' -ErrorAction Stop | Out-Null",
+            cancellationToken);
+        if (!linked)
+        {
+            try
+            {
+                MoveDirectory(destination, source, CancellationToken.None);
+                return new UninstallOutcome(false, $"Jonction impossible, le dossier a été remis en place. {linkErr.Trim()}");
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                return new UninstallOutcome(false, $"Jonction impossible et retour arrière échoué : le programme se trouve maintenant dans \"{destination}\". {ex.Message}");
+            }
+        }
+
+        try
+        {
+            using var key = RegistryPathHelper.GetBaseKey(hivePrefix).OpenSubKey(subKeyPath, writable: true);
+            key?.SetValue("InstallLocation", destination, RegistryValueKind.String);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
+        {
+            return new UninstallOutcome(true, $"Programme déplacé vers \"{destination}\" (jonction créée), mais l'entrée de registre n'a pas pu être mise à jour : {ex.Message}");
+        }
+
+        return new UninstallOutcome(true, $"Programme déplacé vers \"{destination}\". Une jonction a été laissée à l'ancien emplacement.");
+    }
+
+    /// <summary>Déplace un dossier : renommage direct sur le même volume, sinon copie puis suppression de la source.</summary>
+    private static void MoveDirectory(string source, string destination, CancellationToken cancellationToken)
+    {
+        if (string.Equals(Path.GetPathRoot(source), Path.GetPathRoot(destination), StringComparison.OrdinalIgnoreCase))
+        {
+            Directory.Move(source, destination);
+            return;
+        }
+
+        try
+        {
+            CopyDirectory(source, destination, cancellationToken);
+        }
+        catch
+        {
+            try { Directory.Delete(destination, recursive: true); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            throw;
+        }
+
+        Directory.Delete(source, recursive: true);
+    }
+
+    private static void CopyDirectory(string source, string destination, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(destination);
+
+        foreach (var file in Directory.EnumerateFiles(source))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Copy(file, Path.Combine(destination, Path.GetFileName(file)));
+        }
+
+        foreach (var dir in Directory.EnumerateDirectories(source))
+        {
+            CopyDirectory(dir, Path.Combine(destination, Path.GetFileName(dir)), cancellationToken);
+        }
+    }
+
     private IReadOnlyList<InstalledProgram> GetWin32Programs(CancellationToken cancellationToken)
     {
         var programs = new List<InstalledProgram>();

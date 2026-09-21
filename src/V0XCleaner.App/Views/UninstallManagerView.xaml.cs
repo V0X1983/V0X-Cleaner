@@ -69,6 +69,40 @@ public partial class UninstallManagerView : UserControl
         await viewModel.ForceRemoveCommand.ExecuteAsync(programVm);
     }
 
+    private async void MoveButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: InstalledProgramViewModel programVm } || DataContext is not UninstallManagerViewModel viewModel)
+        {
+            return;
+        }
+
+        var dialog = new OpenFolderDialog
+        {
+            Title = $"Choisir le dossier de destination pour \"{programVm.DisplayName}\""
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Déplacer \"{programVm.DisplayName}\" vers :\n{dialog.FolderName}\n\n" +
+            "Fermez le programme avant de continuer. Une jonction sera laissée à l'ancien emplacement " +
+            "et une sauvegarde .reg sera créée automatiquement.\n\nContinuer ?",
+            "Confirmer le déplacement",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await viewModel.MoveProgramAsync(programVm, dialog.FolderName);
+    }
+
     private void ExportCsvButton_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is not UninstallManagerViewModel viewModel)
