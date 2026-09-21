@@ -40,7 +40,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="140" />
                 <ColumnDefinition Width="140" />
-                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="230" />
                 <ColumnDefinition Width="160" />
             </Grid.ColumnDefinitions>
             <CheckBox Grid.Column="0" IsThreeState="True" IsChecked="{Binding AllSelected}" VerticalAlignment="Center"
@@ -62,7 +62,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="140" />
                                     <ColumnDefinition Width="140" />
-                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="230" />
                                     <ColumnDefinition Width="160" />
                                 </Grid.ColumnDefinitions>
                                 <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanUpdate}" VerticalAlignment="Center" />
@@ -72,9 +72,25 @@
                                            Foreground="{StaticResource BrushTextSecondary}" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
                                 <TextBlock Grid.Column="3" Text="{Binding AvailableVersion}" VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
-                                <TextBlock Grid.Column="4" Text="{Binding Status}" VerticalAlignment="Center"
-                                           Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" Margin="0,0,8,0"
-                                           ToolTip="{Binding Status}" />
+                                <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTip="{Binding Status}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource BrushDanger}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ProgressBar Height="4" Margin="0,4,0,0" Minimum="0" Maximum="100"
+                                                 Value="{Binding ProgressValue, Mode=OneWay}" IsIndeterminate="{Binding IsIndeterminate}"
+                                                 Foreground="{StaticResource BrushAccent}" Background="{StaticResource BrushBorder}"
+                                                 BorderThickness="0"
+                                                 Visibility="{Binding IsWorking, Converter={StaticResource BoolToVisibility}}" />
+                                </StackPanel>
                                 <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="&#xE774;" FontFamily="Segoe MDL2 Assets" Padding="8,3" FontSize="12"
                                             VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="Ouvrir le site web de l'éditeur"

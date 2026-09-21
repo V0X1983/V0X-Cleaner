@@ -23,6 +23,15 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Une mise à jour de logiciel peut lancer un redémarrage du PC : on le refuse tant qu'elle est en cours.
+        SessionEnding += (_, args) =>
+        {
+            if (V0XCleaner.App.Infrastructure.ShutdownGuard.IsActive)
+            {
+                args.Cancel = true;
+            }
+        };
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .WriteTo.File(

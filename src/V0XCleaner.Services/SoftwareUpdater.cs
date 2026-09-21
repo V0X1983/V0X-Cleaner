@@ -21,18 +21,57 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         return new SoftwareUpdateScan(true, updates, null);
     }
 
-    public async Task<bool> UpdateAsync(string packageId, IProgress<SoftwareUpdateProgress>? progress = null, CancellationToken cancellationToken = default)
+    public async Task<SoftwareUpdateResult> UpdateAsync(string packageId, IProgress<SoftwareUpdateProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!PackageIdRegex().IsMatch(packageId))
         {
-            return false;
+            return new SoftwareUpdateResult(false, "Identifiant de paquet invalide.");
         }
 
-        var (started, exitCode, _) = await RunWingetAsync(
-            $"upgrade --id {packageId} --exact --include-unknown --silent --accept-package-agreements --accept-source-agreements",
-            cancellationToken, line => ReportProgress(line, progress));
+        // winget n'affiche pas de progression quand sa sortie est redirigée : le pourcentage du téléchargement
+        // est calculé à part (voir WingetDownloadWatcher) jusqu'à la ligne qui annonce l'installation.
+        using var watchCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var startedUtc = DateTime.UtcNow;
+        Task? watcher = null;
+
+        var noRestart = await GetNoRestartArgumentAsync(packageId, cancellationToken);
+
+        var (started, exitCode, output) = await RunWingetAsync(
+            $"upgrade --id {packageId} --exact --include-unknown --silent --accept-package-agreements --accept-source-agreements{noRestart}",
+            cancellationToken,
+            line =>
+            {
+                if (IsInstallLine(line))
+                {
+                    watchCts.Cancel();
+                }
+                else if (watcher is null && progress is not null && WingetDownloadWatcher.TryGetUrl(line, out var url))
+                {
+                    watcher = WingetDownloadWatcher.WatchAsync(packageId, url, startedUtc, progress, watchCts.Token);
+                }
+
+                ReportProgress(line, progress);
+            });
+
+        watchCts.Cancel();
+        if (watcher is not null)
+        {
+            await watcher;
+        }
+
         logger.LogInformation("Mise à jour winget de {Id} : code {Code}", packageId, exitCode);
-        return started && exitCode == 0;
+
+        if (!started)
+        {
+            return new SoftwareUpdateResult(false, "winget est introuvable sur ce PC.");
+        }
+
+        if (exitCode == 0)
+        {
+            return new SoftwareUpdateResult(true);
+        }
+
+        return new SoftwareUpdateResult(false, ExplainFailure(output, exitCode));
     }
 
     public async Task<Uri?> GetWebsiteAsync(string packageId, CancellationToken cancellationToken = default)
@@ -77,6 +116,50 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
         return null;
     }
 
+    /// <summary>
+    /// Les installateurs de type Burn/WiX redémarrent le PC tout seuls en mode silencieux quand ils en ont besoin ;
+    /// leur option standard « /norestart » l'empêche. Elle n'est ajoutée que pour ces types, car d'autres
+    /// installateurs rejetteraient une option inconnue.
+    /// </summary>
+    private async Task<string> GetNoRestartArgumentAsync(string packageId, CancellationToken cancellationToken)
+    {
+        var (started, _, output) = await RunWingetAsync($"show --id {packageId} --exact --accept-source-agreements", cancellationToken);
+        var type = started ? ParseInstallerType(output) : null;
+        return type is "burn" or "wix" ? " --custom \"/norestart\"" : string.Empty;
+    }
+
+    /// <summary>Lit le type de programme d'installation (msi, exe, burn...) dans la sortie de « winget show ».</summary>
+    internal static string? ParseInstallerType(string output)
+    {
+        var match = InstallerTypeRegex().Match(output.Replace('’', '\''));
+        return match.Success ? match.Groups[1].Value.ToLowerInvariant() : null;
+    }
+
+    /// <summary>Traduit un échec de winget en message utile quand la cause est connue.</summary>
+    internal static string ExplainFailure(string output, int exitCode)
+    {
+        var text = output.Replace('’', '\'');
+
+        // Certains paquets exigent un dossier d'installation : winget le demande en interactif, ce qui est impossible ici.
+        if (text.Contains("install location", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("emplacement d'installation", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Dossier d'installation requis : voir le site (globe)";
+        }
+
+        return $"Échec de winget (code 0x{exitCode:X8}) : droits administrateur ou application ouverte ?";
+    }
+
+    /// <summary>Vrai pour les lignes de winget qui marquent la fin du téléchargement et le début de l'installation (anglais ou français).</summary>
+    internal static bool IsInstallLine(string line)
+    {
+        var text = line.Replace('’', '\'');
+        return text.Contains("Starting package install", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("verified installer hash", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Démarrage de l'installation", StringComparison.OrdinalIgnoreCase)
+            || (text.Contains("hachage", StringComparison.OrdinalIgnoreCase) && text.Contains("vérifié", StringComparison.OrdinalIgnoreCase));
+    }
+
     internal static void ReportProgress(string line, IProgress<SoftwareUpdateProgress>? progress)
     {
         if (progress is null)
@@ -84,10 +167,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
             return;
         }
 
-        if (line.Contains("Starting package install", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("Démarrage de l'installation", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("Successfully verified installer hash", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("Le hachage de l'installation a été vérifié", StringComparison.OrdinalIgnoreCase))
+        if (IsInstallLine(line))
         {
             progress.Report(new SoftwareUpdateProgress(SoftwareUpdatePhase.Installing, null));
             return;
@@ -177,6 +257,7 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
+                RedirectStandardInput = true,
                 StandardOutputEncoding = Encoding.UTF8
             };
 
@@ -185,6 +266,10 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
             {
                 return (false, -1, string.Empty);
             }
+
+            // Aucune saisie possible : si winget pose une question (dossier d'installation, confirmation...),
+            // il échoue tout de suite au lieu d'attendre indéfiniment une réponse.
+            process.StandardInput.Close();
 
             try
             {
@@ -245,6 +330,9 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
 
     [GeneratedRegex(@"(\d{1,3})\s*%")]
     private static partial Regex PercentProgressRegex();
+
+    [GeneratedRegex(@"(?im)^\s*(?:Type du programme d'installation|Type de programme d'installation|Installer Type)\s*:\s*(\w+)")]
+    private static partial Regex InstallerTypeRegex();
 
     [GeneratedRegex(@"^[A-Za-z0-9][A-Za-z0-9._\-+]*$")]
     private static partial Regex PackageIdRegex();

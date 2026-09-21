@@ -4,6 +4,9 @@ public sealed record SoftwareUpdate(string Name, string Id, string CurrentVersio
 
 public sealed record SoftwareUpdateScan(bool WingetAvailable, IReadOnlyList<SoftwareUpdate> Updates, string? Error);
 
+/// <summary>Résultat d'une mise à jour ; <see cref="Message"/> explique l'échec quand la cause est connue.</summary>
+public sealed record SoftwareUpdateResult(bool Success, string? Message = null);
+
 public enum SoftwareUpdatePhase
 {
     Downloading,

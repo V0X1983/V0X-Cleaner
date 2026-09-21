@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using V0XCleaner.App.Infrastructure;
 using V0XCleaner.Core.Abstractions;
 using V0XCleaner.Core.Models;
 
@@ -34,6 +36,22 @@ public partial class SoftwareUpdateItemViewModel(SoftwareUpdate update) : Observ
 
     [ObservableProperty]
     private bool _isLookingUpWebsite;
+
+    /// <summary>Vrai quand la dernière tentative de mise à jour a échoué (le statut s'affiche alors en rouge).</summary>
+    [ObservableProperty]
+    private bool _isError;
+
+    /// <summary>Vrai pendant le téléchargement et l'installation ; affiche la barre de progression de la ligne.</summary>
+    [ObservableProperty]
+    private bool _isWorking;
+
+    /// <summary>Avancement du téléchargement (0-100).</summary>
+    [ObservableProperty]
+    private double _progressValue;
+
+    /// <summary>Vrai quand l'avancement est inconnu (installation, ou taille du téléchargement non annoncée).</summary>
+    [ObservableProperty]
+    private bool _isIndeterminate = true;
 }
 
 public partial class SoftwareUpdatesViewModel : ObservableObject
@@ -152,6 +170,7 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         }
 
         IsBusy = true;
+        using var guard = ShutdownGuard.Begin("Mise à jour de logiciels en cours");
         try
         {
             await UpdateItemAsync(item);
@@ -166,6 +185,7 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
     private async Task UpdateSelectedAsync()
     {
         IsBusy = true;
+        using var guard = ShutdownGuard.Begin("Mise à jour de logiciels en cours");
         try
         {
             foreach (var item in Updates.Where(u => u.IsSelected && !u.IsUpdated).ToList())
@@ -184,31 +204,80 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
     private async Task UpdateItemAsync(SoftwareUpdateItemViewModel item)
     {
         item.Status = "Téléchargement...";
+        item.IsError = false;
+        item.ProgressValue = 0;
+        item.IsIndeterminate = true;
+        item.IsWorking = true;
+
         var phase = SoftwareUpdatePhase.Downloading;
+        var finished = false;
+        Stopwatch? installWatch = null;
+
+        // winget ne donne aucun pourcentage pour l'installation : on affiche une barre animée et le temps écoulé.
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        timer.Tick += (_, _) =>
+        {
+            if (!finished && installWatch is not null)
+            {
+                var elapsed = installWatch.Elapsed;
+                item.Status = $"Installation... {(int)elapsed.TotalMinutes}:{elapsed.Seconds:00}";
+            }
+        };
+
         var progress = new Progress<SoftwareUpdateProgress>(p =>
         {
-            // Ne jamais revenir en arrière : l'installation suit le téléchargement.
-            if (p.Phase < phase)
+            // Les rapports arrivent en différé : on ignore ceux d'une phase passée ou d'une mise à jour terminée.
+            if (finished || p.Phase < phase)
             {
                 return;
             }
 
             phase = p.Phase;
-            item.Status = p.Phase == SoftwareUpdatePhase.Installing
-                ? "Installation..."
-                : p.Percent is { } pct ? $"Téléchargement {pct:0} %" : "Téléchargement...";
+            if (p.Phase == SoftwareUpdatePhase.Installing)
+            {
+                if (installWatch is null)
+                {
+                    installWatch = Stopwatch.StartNew();
+                    item.IsIndeterminate = true;
+                    item.Status = "Installation... 0:00";
+                    timer.Start();
+                }
+
+                return;
+            }
+
+            if (p.Percent is { } percent)
+            {
+                item.IsIndeterminate = false;
+                item.ProgressValue = percent;
+                item.Status = $"Téléchargement {percent:0} %";
+            }
+            else
+            {
+                item.IsIndeterminate = true;
+                item.Status = "Téléchargement...";
+            }
         });
 
         try
         {
-            var ok = await Task.Run(() => _updater.UpdateAsync(item.Update.Id, progress));
-            item.Status = ok ? "Mis à jour" : "Échec (droits administrateur ou application ouverte ?)";
-            item.IsUpdated = ok;
+            var result = await Task.Run(() => _updater.UpdateAsync(item.Update.Id, progress));
+            finished = true;
+            item.Status = result.Success ? "Mis à jour" : result.Message ?? "Échec de la mise à jour.";
+            item.IsUpdated = result.Success;
+            item.IsError = !result.Success;
         }
         catch (Exception ex)
         {
+            finished = true;
             _logger.LogError(ex, "Erreur de mise à jour de {Id}", item.Update.Id);
             item.Status = "Erreur";
+            item.IsError = true;
+        }
+        finally
+        {
+            timer.Stop();
+            item.IsWorking = false;
         }
     }
 
