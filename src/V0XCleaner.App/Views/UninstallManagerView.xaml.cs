@@ -81,6 +81,20 @@ public partial class UninstallManagerView : UserControl
             Title = $"Choisir le dossier de destination pour \"{programVm.DisplayName}\""
         };
 
+        // S'ouvre sur le dossier qui contient l'application, pour voir où elle se trouve actuellement.
+        try
+        {
+            var current = Path.GetFullPath(programVm.Program.InstallLocation!.Trim().Trim('"')).TrimEnd('\\');
+            var parent = Path.GetDirectoryName(current);
+            if (parent is not null && Directory.Exists(parent))
+            {
+                dialog.InitialDirectory = parent;
+            }
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+        }
+
         if (dialog.ShowDialog() != true)
         {
             return;
