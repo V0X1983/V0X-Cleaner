@@ -2,6 +2,8 @@
 
 ## Non publié
 
+## 0.2.0
+
 - Nouvelles pages : Mise à jour de logiciels (winget), Mise à jour de pilotes (liste + Windows Update), Optimiseur de performances, Aide.
 - Section Stockage cloud dans le Nettoyeur (journaux et caches OneDrive, Google Drive, Dropbox).
 - Thème appliqué à tous les contrôles.
@@ -12,6 +14,9 @@
 - Mise à jour de logiciels : progression du téléchargement et de l'installation, plus de blocage de winget, protection contre les redémarrages imposés par les installateurs.
 - Registre : seules les 10 dernières sauvegardes .reg sont conservées.
 - Vérification des mises à jour sur le dépôt officiel V0X1983/V0X-Cleaner par défaut.
+- Mise à jour automatique : « Vérifier maintenant » télécharge la nouvelle version (empreinte SHA-256 vérifiée), l'installe en silencieux puis relance l'application.
+- Désinstalleur : déplacement d'un logiciel vers un autre dossier ou disque (jonction laissée à l'ancien emplacement, sauvegarde .reg).
+- Menu latéral : message de soutien avec adresse pour un virement.
 
 ## 0.1.0
 

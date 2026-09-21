@@ -166,16 +166,65 @@ public partial class OptionsViewModel : ObservableObject
             var result = await Task.Run(() => _updateChecker.GetLatestReleaseAsync(UpdateCheckOwner, UpdateCheckRepo));
             UpdateStatusMessage = result.Message;
             LatestReleaseUrl = result.ReleaseUrl;
+
+            if (!result.Success)
+            {
+                return;
+            }
+
+            var installed = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (!Version.TryParse(result.Version, out var latest) || installed is null || latest <= new Version(installed.Major, installed.Minor, Math.Max(installed.Build, 0)))
+            {
+                UpdateStatusMessage = $"V0X Cleaner est à jour (version {installed?.ToString(3)}).";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(result.InstallerUrl))
+            {
+                UpdateStatusMessage = $"La version {result.Version} est disponible, mais aucun installeur n'y est joint : utilisez « Ouvrir la version ».";
+                return;
+            }
+
+            UpdateStatusMessage = $"Version {result.Version} trouvée. Téléchargement...";
+            var progress = new Progress<double>(p => UpdateStatusMessage = $"Version {result.Version} : téléchargement {p:P0}...");
+            var installerPath = await Task.Run(() => _updateChecker.DownloadInstallerAsync(result, progress));
+
+            UpdateStatusMessage = "Installation de la mise à jour : V0X Cleaner va se fermer puis se relancer.";
+            LaunchInstallerAndRestart(installerPath);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la vérification des mises à jour.");
-            UpdateStatusMessage = "Erreur lors de la vérification des mises à jour.";
+            UpdateStatusMessage = $"Erreur lors de la mise à jour : {ex.Message}";
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Lance l'installeur en silencieux (avec élévation UAC) puis relance l'application, dans un
+    /// PowerShell indépendant qui survit à la fermeture de V0X Cleaner. Si l'élévation est refusée,
+    /// l'application se relance quand même, sans mise à jour.
+    /// </summary>
+    private static void LaunchInstallerAndRestart(string installerPath)
+    {
+        static string Q(string value) => value.Replace("'", "''");
+
+        var appPath = Environment.ProcessPath ?? string.Empty;
+        var script =
+            $"try {{ Start-Process -FilePath '{Q(installerPath)}' -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CLOSEAPPLICATIONS' -Verb RunAs -Wait }} catch {{ }}; " +
+            $"Start-Process -FilePath '{Q(appPath)}'";
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe",
+            $"-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command \"{script}\"")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+
+        System.Windows.Application.Current.Shutdown();
     }
 
     private bool CanRun() => !IsBusy;

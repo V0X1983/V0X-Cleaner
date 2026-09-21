@@ -13,6 +13,7 @@ namespace V0XCleaner.Services;
 public sealed class GitHubUpdateChecker : IUpdateChecker
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private static readonly HttpClient DownloadHttp = new() { Timeout = TimeSpan.FromMinutes(15) };
 
     public async Task<LatestReleaseInfo> GetLatestReleaseAsync(string owner, string repo, CancellationToken cancellationToken = default)
     {
@@ -56,12 +57,86 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
                 return new LatestReleaseInfo(false, null, null, "Réponse inattendue du serveur de mises à jour.");
             }
 
+            string? installerUrl = null;
+            string? installerSha256 = null;
+            if (doc.RootElement.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var asset in assets.EnumerateArray())
+                {
+                    var name = asset.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
+                    if (name is null
+                        || !name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                        || !name.Contains("Setup", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    installerUrl = asset.TryGetProperty("browser_download_url", out var dl) ? dl.GetString() : null;
+                    var digest = asset.TryGetProperty("digest", out var digestProp) ? digestProp.GetString() : null;
+                    installerSha256 = digest is not null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+                        ? digest["sha256:".Length..]
+                        : null;
+                    break;
+                }
+            }
+
             var version = tagName.TrimStart('v', 'V');
-            return new LatestReleaseInfo(true, version, htmlUrl, $"Dernière version publiée : {version}.");
+            return new LatestReleaseInfo(true, version, htmlUrl, $"Dernière version publiée : {version}.", installerUrl, installerSha256);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             return new LatestReleaseInfo(false, null, null, $"Échec de la vérification : {ex.Message}");
         }
+    }
+
+    public async Task<string> DownloadInstallerAsync(LatestReleaseInfo release, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (!Uri.TryCreate(release.InstallerUrl, UriKind.Absolute, out var uri)
+            || uri.Scheme != Uri.UriSchemeHttps
+            || !(uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase)
+                 || uri.Host.EndsWith(".githubusercontent.com", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("Aucun installeur téléchargeable depuis GitHub n'est joint à cette version.");
+        }
+
+        var folder = Path.Combine(Path.GetTempPath(), "V0XCleaner-update");
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, Path.GetFileName(uri.LocalPath));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        request.Headers.UserAgent.ParseAdd("V0XCleaner-UpdateChecker");
+        using var response = await DownloadHttp.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var total = response.Content.Headers.ContentLength;
+        await using (var source = await response.Content.ReadAsStreamAsync(cancellationToken))
+        await using (var target = File.Create(path))
+        {
+            var buffer = new byte[81920];
+            long read = 0;
+            int n;
+            while ((n = await source.ReadAsync(buffer, cancellationToken)) > 0)
+            {
+                await target.WriteAsync(buffer.AsMemory(0, n), cancellationToken);
+                read += n;
+                if (total is > 0)
+                {
+                    progress?.Report((double)read / total.Value);
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(release.InstallerSha256))
+        {
+            await using var check = File.OpenRead(path);
+            var hash = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(check, cancellationToken));
+            if (!hash.Equals(release.InstallerSha256, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(path);
+                throw new InvalidOperationException("Le fichier téléchargé ne correspond pas à l'empreinte publiée : mise à jour annulée.");
+            }
+        }
+
+        return path;
     }
 }

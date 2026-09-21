@@ -6,4 +6,10 @@ namespace V0XCleaner.Core.Abstractions;
 public interface IUpdateChecker
 {
     Task<LatestReleaseInfo> GetLatestReleaseAsync(string owner, string repo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Télécharge l'installeur d'une release dans un dossier temporaire et retourne son chemin.
+    /// Refuse toute adresse hors GitHub et vérifie l'empreinte SHA-256 quand elle est connue.
+    /// </summary>
+    Task<string> DownloadInstallerAsync(LatestReleaseInfo release, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
 }
