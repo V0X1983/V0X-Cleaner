@@ -16,10 +16,18 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
 
     public async Task<LatestReleaseInfo> GetLatestReleaseAsync(string owner, string repo, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(owner) || string.IsNullOrWhiteSpace(repo))
+        if (string.IsNullOrWhiteSpace(owner))
         {
-            return new LatestReleaseInfo(false, null, null, "Aucun dépôt de mise à jour configuré.");
+            owner = AppSettings.DefaultUpdateOwner;
         }
+
+        if (string.IsNullOrWhiteSpace(repo))
+        {
+            repo = AppSettings.DefaultUpdateRepo;
+        }
+
+        owner = owner.Trim();
+        repo = repo.Trim();
 
         try
         {
