@@ -12,7 +12,7 @@ public sealed class AppSettings
     public long MonitoringThresholdBytes { get; set; } = 500L * 1024 * 1024;
 
     /// <summary>Dépôt GitHub Releases vérifié pour les mises à jour ; les valeurs vides retombent sur le dépôt officiel.</summary>
-    public const string DefaultUpdateOwner = "v0x83";
+    public const string DefaultUpdateOwner = "V0X1983";
     public const string DefaultUpdateRepo = "V0X-Cleaner";
 
     public string UpdateCheckOwner { get; set; } = DefaultUpdateOwner;

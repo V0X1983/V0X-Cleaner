@@ -11,7 +11,7 @@
 - Démarrage : onglets Menu contextuel et Services Windows.
 - Mise à jour de logiciels : progression du téléchargement et de l'installation, plus de blocage de winget, protection contre les redémarrages imposés par les installateurs.
 - Registre : seules les 10 dernières sauvegardes .reg sont conservées.
-- Vérification des mises à jour sur le dépôt officiel v0x83/V0X-Cleaner par défaut.
+- Vérification des mises à jour sur le dépôt officiel V0X1983/V0X-Cleaner par défaut.
 
 ## 0.1.0
 
