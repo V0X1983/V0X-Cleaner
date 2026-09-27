@@ -43,6 +43,18 @@ public sealed partial class ToolsPage : Page
             case "optimizer":
                 ToolFrame.Navigate(typeof(OptimizerPage));
                 return;
+            case "drive-wiper":
+                ToolFrame.Navigate(typeof(DriveWiperPage));
+                return;
+            case "duplicates":
+                ToolFrame.Navigate(typeof(DuplicateFinderPage));
+                return;
+            case "disk-analyzer":
+                ToolFrame.Navigate(typeof(DiskAnalyzerPage));
+                return;
+            case "uninstall":
+                ToolFrame.Navigate(typeof(UninstallManagerPage));
+                return;
         }
 
         ToolFrame.Navigate(typeof(PlaceholderPage), new PlaceholderPageViewModel

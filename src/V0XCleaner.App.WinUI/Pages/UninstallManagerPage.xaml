@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="V0XCleaner.App.WinUI.Pages.UninstallManagerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Margin="32,24,32,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Programme de désinstallation" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Programmes classiques et applications du Microsoft Store installés sur cet ordinateur." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="120" />
+                <ColumnDefinition Width="170" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Text="{Binding SearchText, Mode=TwoWay}"
+                     VerticalContentAlignment="Center" Padding="8,4"
+                     ToolTipService.ToolTip="Rechercher un programme" />
+
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                      Margin="12,0,0,0" VerticalContentAlignment="Center" />
+        </Grid>
+
+        <!-- En-têtes de colonnes -->
+        <Grid Grid.Row="2" Margin="12,0,29,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="210" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Programme" Foreground="{ThemeResource BrushTextSecondary}" />
+            <TextBlock Grid.Column="1" Text="Taille" HorizontalAlignment="Right" Foreground="{ThemeResource BrushTextSecondary}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding DisplayedPrograms}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{ThemeResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10"
+                                Loaded="ProgramRow_Loaded">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="36" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="210" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0" Width="36" Height="36" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <Border Background="{ThemeResource BrushSurfaceAlt}" CornerRadius="8">
+                                        <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Foreground="{ThemeResource BrushTextSecondary}" />
+                                    </Border>
+                                    <Image Source="{Binding Icon}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                               ToolTipService.ToolTip="{Binding DisplayName}" />
+                                    <TextBlock Text="{Binding DetailsLine}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                               Foreground="{ThemeResource BrushTextSecondary}" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="2" Text="{Binding FormattedSize}" VerticalAlignment="Center" TextAlignment="Right"
+                                           Foreground="{ThemeResource BrushAccent}" />
+
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Désinstaller" Padding="8,3" FontSize="11" Margin="0,0,6,0"
+                                                IsEnabled="{Binding CanUninstall}" Click="UninstallButton_Click" Tag="{Binding}" />
+                                        <Button Content="Déplacer" Padding="8,3" FontSize="11" Margin="0,0,6,0"
+                                                ToolTipService.ToolTip="Déplacer le dossier d'installation vers un autre dossier ou disque (une jonction est laissée à l'ancien emplacement)"
+                                                Visibility="{Binding CanMove, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Click="MoveButton_Click" Tag="{Binding}" />
+                                        <Button Content="Forcer" Padding="8,3" FontSize="11"
+                                                ToolTipService.ToolTip="Supprimer directement le dossier et l'entrée de registre, sans lancer le désinstalleur"
+                                                Visibility="{Binding IsWin32, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Click="ForceRemoveButton_Click" Tag="{Binding}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding StatusMessage}" FontSize="10" TextWrapping="Wrap" Margin="0,3,0,0" MaxWidth="200"
+                                               HorizontalAlignment="Right" Foreground="{ThemeResource BrushTextSecondary}"
+                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Barre du bas -->
+        <Border Grid.Row="4" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource BrushBorder}" Margin="0,16,0,0" Padding="0,16,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="{ThemeResource BrushTextSecondary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Exporter en CSV" Click="ExportCsvButton_Click" Margin="0,0,12,0" Padding="14,6" />
+                    <Button Content="Actualiser" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RefreshCommand}" MinWidth="110" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

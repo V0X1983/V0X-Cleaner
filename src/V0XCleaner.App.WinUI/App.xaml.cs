@@ -66,6 +66,10 @@ public partial class App : Application
                 services.AddTransient<HealthCheckViewModel>();
                 services.AddTransient<CleanerPageViewModel>();
                 services.AddTransient<RegistryPageViewModel>();
+                services.AddTransient<DriveWiperViewModel>();
+                services.AddTransient<DuplicateFinderViewModel>();
+                services.AddTransient<DiskAnalyzerViewModel>();
+                services.AddTransient<UninstallManagerViewModel>();
             })
             .Build();
 
