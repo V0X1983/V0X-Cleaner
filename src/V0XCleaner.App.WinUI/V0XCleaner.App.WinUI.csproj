@@ -27,9 +27,11 @@
       bin/Debug/.../win-x64 sans identité de paquet (double-clic, ou notre workflow habituel de
       build+run pendant le développement) — la classe WinRT qu'il attend n'est fournie que via
       dotnet run (qui enregistre une identité de debug/AUMID) ou une vraie installation MSIX.
-      Désactivé ici pour permettre le double-clic direct pendant le développement ; à revalider
-      avant le vrai empaquetage MSIX de la Phase 7 (peut-être plus nécessaire une fois l'app
-      réellement installée avec identité de paquet).
+      Désactivé en Debug pour permettre le double-clic direct pendant le développement (aucun besoin
+      du vérificateur : soit pas d'identité de paquet, soit une identité obtenue par enregistrement
+      "loose" pour les tests de la Phase 7, sans dépendance au framework partagé). Réactivé (valeur
+      par défaut) pour toute autre configuration : un vrai paquet MSIX distribué (Release) en a besoin
+      pour installer automatiquement le Windows App SDK partagé s'il manque sur la machine cible.
 
       Même sans ce vérificateur, `Microsoft.UI.Xaml.Application.Start()` lui-même échoue en
       REGDB_E_CLASSNOTREG tant que l'exe n'a pas d'identité de paquet (double-clic sur le .exe de
@@ -40,7 +42,7 @@
       direct pendant le développement. Limité à Debug : un vrai paquet MSIX (Phase 7) ne doit PAS être
       autonome (dépendre du framework partagé est le fonctionnement normal d'un paquet MSIX).
     -->
-    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize Condition="'$(Configuration)'=='Debug'">false</WindowsAppSdkDeploymentManagerInitialize>
     <WindowsAppSDKSelfContained Condition="'$(Configuration)'=='Debug'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 

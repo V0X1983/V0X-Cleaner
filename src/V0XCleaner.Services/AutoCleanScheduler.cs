@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.CSharp.RuntimeBinder;
 using V0XCleaner.Core.Abstractions;
+using V0XCleaner.Services.Native;
 
 namespace V0XCleaner.Services;
 
@@ -54,7 +55,13 @@ public sealed class AutoCleanScheduler : IAutoCleanScheduler
             }
 
             dynamic action = taskDefinition.Actions.Create(TaskActionExec);
-            action.Path = Environment.ProcessPath;
+            // Empaqueté (MSIX) : Environment.ProcessPath pointe vers WindowsApps\<Nom>_<Version>_...,
+            // un chemin qui change à chaque mise à jour et casserait la tâche planifiée (Phase 2/6).
+            // L'alias d'exécution "v0xcleaner.exe" (Package.appxmanifest) est un chemin fixe qui
+            // relaie les arguments vers le paquet installé quelle que soit sa version.
+            action.Path = PackageIdentity.TryGetFamilyName(out _)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "v0xcleaner.exe")
+                : Environment.ProcessPath;
             action.Arguments = "--silent --clean";
 
             taskDefinition.Principal.LogonType = TaskLogonInteractiveToken;

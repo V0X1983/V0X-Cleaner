@@ -1,11 +1,14 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Serilog;
 using V0XCleaner.App.WinUI.Infrastructure;
 using V0XCleaner.App.WinUI.ViewModels;
 using V0XCleaner.Core.Abstractions;
+using V0XCleaner.Core.Models;
 using V0XCleaner.Services;
 using V0XCleaner.Services.Elevation;
 using V0XCleaner.Services.Native;
@@ -68,6 +71,20 @@ public partial class App : Application
 
         _host.Start();
 
+        // Empaqueté (MSIX), lancé via l'alias d'exécution stable (AutoCleanScheduler / Phase 6) avec
+        // "--silent --clean" : équivalent WinUI du --silent --clean de l'app WPF. L'activation arrive
+        // en CommandLineLaunch (et non via les arguments de LaunchActivatedEventArgs, qui ne portent
+        // pas la ligne de commande pour ce type d'activation).
+        var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+        if (activationArgs?.Kind == ExtendedActivationKind.CommandLineLaunch
+            && activationArgs.Data is Windows.ApplicationModel.Activation.ICommandLineActivatedEventArgs commandLine
+            && commandLine.Operation.Arguments.Contains("--silent")
+            && commandLine.Operation.Arguments.Contains("--clean"))
+        {
+            _ = RunSilentCleanAndExitAsync();
+            return;
+        }
+
         var settings = _host.Services.GetRequiredService<ISettingsService>();
         var viewModel = _host.Services.GetRequiredService<MainWindowViewModel>();
 
@@ -90,6 +107,36 @@ public partial class App : Application
     /// donc fait explicitement ici plutôt que dans un OnExit qui pourrait ne jamais s'exécuter.
     /// </summary>
     public static void Shutdown() => ((App)Current).CompleteShutdown();
+
+    /// <summary>Port du RunSilentCleanAndExitAsync de l'app WPF (--silent --clean) : jamais de fenêtre créée.</summary>
+    private async Task RunSilentCleanAndExitAsync()
+    {
+        try
+        {
+            var catalog = _host!.Services.GetRequiredService<ICleaningCatalog>();
+            var logger = _host.Services.GetRequiredService<ILogger<App>>();
+
+            foreach (var task in catalog.GetTasks().Where(t => t.SelectedByDefault))
+            {
+                try
+                {
+                    var scanResult = await task.Scanner.ScanAsync();
+                    if (scanResult.Items.Count > 0)
+                    {
+                        await task.Cleaner.CleanAsync(scanResult.Items, OperationMode.Execute);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Échec du nettoyage silencieux pour {Key}", task.Key);
+                }
+            }
+        }
+        finally
+        {
+            Shutdown();
+        }
+    }
 
     private void CompleteShutdown()
     {
