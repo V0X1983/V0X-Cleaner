@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="V0XCleaner.App.WinUI.Pages.OptionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource BrushSurface}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="0,0,0,16" />
+        </Style>
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="32,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Options" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Nettoyage automatique, surveillance en arrière-plan, mises à jour et apparence." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="640" HorizontalAlignment="Left">
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Nettoyage automatique planifié" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Activer le nettoyage automatique" IsChecked="{Binding AutoCleanEnabled, Mode=TwoWay}" Margin="0,0,0,10" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Fréquence :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <ComboBox Grid.Column="1" IsEnabled="{Binding AutoCleanEnabled}" ItemsSource="{Binding FrequencyOptions}" SelectedItem="{Binding AutoCleanFrequency, Mode=TwoWay}" MinWidth="100" Margin="0,0,16,0" />
+                            <TextBlock Grid.Column="2" Text="Heure :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <ComboBox Grid.Column="3" IsEnabled="{Binding AutoCleanEnabled}" ItemsSource="{Binding HourOptions}" SelectedItem="{Binding AutoCleanHour, Mode=TwoWay}" MinWidth="60" />
+                        </Grid>
+                        <TextBlock Text="Exécute les catégories système cochées par défaut (voir l'onglet Nettoyeur), sans intervention."
+                                   FontSize="11" Foreground="{ThemeResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Surveillance en temps réel" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Activer la surveillance (icône dans la zone de notification)"
+                                  IsChecked="{Binding RealTimeMonitoringEnabled, Mode=TwoWay}" Margin="0,0,0,10" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Contrôler toutes les :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <TextBox Grid.Column="1" IsEnabled="{Binding RealTimeMonitoringEnabled}" Text="{Binding MonitoringIntervalMinutes, Mode=TwoWay}" Width="50" Margin="0,0,4,0" />
+                            <TextBlock Grid.Column="2" Text="minutes, si plus de (Mo) :" VerticalAlignment="Center" Margin="8,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <TextBox Grid.Column="3" IsEnabled="{Binding RealTimeMonitoringEnabled}" Text="{Binding MonitoringThresholdMb, Mode=TwoWay}" Width="70" />
+                        </Grid>
+                        <TextBlock Text="Ferme la fenêtre principale sans quitter l'application tant que la surveillance est active."
+                                   FontSize="11" Foreground="{ThemeResource BrushTextSecondary}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Mises à jour" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="Dépôt GitHub Releases à vérifier (vide = dépôt officiel V0X1983/V0X-Cleaner) :" FontSize="12"
+                                   Foreground="{ThemeResource BrushTextSecondary}" Margin="0,0,0,6" />
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding UpdateCheckOwner, Mode=TwoWay}"
+                                     PlaceholderText="propriétaire" Margin="0,0,6,0" />
+                            <TextBox Grid.Column="1" Text="{Binding UpdateCheckRepo, Mode=TwoWay}"
+                                     PlaceholderText="dépôt" Margin="6,0,0,0" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Vérifier maintenant" Command="{Binding CheckForUpdatesCommand}" Padding="12,6" Margin="0,0,10,0" />
+                            <Button Content="Ouvrir la version" Click="OpenReleaseButton_Click"
+                                    Visibility="{Binding LatestReleaseUrl, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" Padding="12,6" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding UpdateStatusMessage}" FontSize="12" Foreground="{ThemeResource BrushTextSecondary}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Général" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Lancer V0X Cleaner à l'ouverture de session Windows" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" Margin="0,0,0,12" />
+                        <TextBlock Text="Exclusions (un chemin de fichier ou dossier par ligne, jamais nettoyé) :" FontSize="12"
+                                   Foreground="{ThemeResource BrushTextSecondary}" Margin="0,0,0,6" />
+                        <TextBox Text="{Binding ExcludedPathsText, Mode=TwoWay}" AcceptsReturn="True"
+                                 MinHeight="70" MaxHeight="140" ScrollViewer.VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Corbeille de sécurité" Style="{StaticResource SectionTitleStyle}" />
+                        <CheckBox Content="Mettre les fichiers nettoyés en quarantaine au lieu de les supprimer définitivement"
+                                  IsChecked="{Binding QuarantineEnabled, Mode=TwoWay}" Margin="0,0,0,10" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Purge automatique après (jours) :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <TextBox IsEnabled="{Binding QuarantineEnabled}" Text="{Binding QuarantineRetentionDays, Mode=TwoWay}" Width="50" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Apparence" Style="{StaticResource SectionTitleStyle}" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Thème :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ThemeResource BrushTextSecondary}" />
+                            <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" MinWidth="100" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="À propos" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock Text="{Binding AboutText}" FontWeight="SemiBold" />
+                        <TextBlock Text="Outil de nettoyage et d'optimisation pour Windows 11." FontSize="12"
+                                   Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Content="Enregistrer" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveCommand}" MinWidth="120" Margin="0,0,16,0" />
+            <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="{ThemeResource BrushTextSecondary}" />
+        </StackPanel>
+    </Grid>
+</Page>

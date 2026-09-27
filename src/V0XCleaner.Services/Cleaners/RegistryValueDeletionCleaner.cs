@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using V0XCleaner.Core.Abstractions;
 using V0XCleaner.Core.Models;
+using V0XCleaner.Core.Models.Elevation;
 using V0XCleaner.Services.RegistryCleanup;
 
 namespace V0XCleaner.Services.Cleaners;
@@ -10,8 +11,15 @@ namespace V0XCleaner.Services.Cleaners;
 /// invalide, entrée MuiCache...). Id attendu au format "HKxx\Chemin\Clé||NomDeLaValeur"
 /// (le séparateur "||" évite toute ambiguïté quand le nom de la valeur contient lui-même des
 /// antislashs, ex: un chemin de fichier complet). Sauvegarde .reg obligatoire avant suppression.
+///
+/// Les valeurs qui échouent en direct par manque de droits sont retentées en une seule fois via
+/// <see cref="IElevatedOperationClient"/> (une seule invite UAC pour tout le lot) — voir
+/// RegistryKeyDeletionCleaner pour le même principe.
 /// </summary>
-public sealed class RegistryValueDeletionCleaner(IRegistryBackupService backupService, ILogger<RegistryValueDeletionCleaner> logger) : ICleaner
+public sealed class RegistryValueDeletionCleaner(
+    IRegistryBackupService backupService,
+    IElevatedOperationClient elevatedClient,
+    ILogger<RegistryValueDeletionCleaner> logger) : ICleaner
 {
     public string Key => "registry-value-deletion";
 
@@ -45,6 +53,7 @@ public sealed class RegistryValueDeletionCleaner(IRegistryBackupService backupSe
         }
 
         var errors = new List<CleanupError>();
+        var deniedItems = new List<CleanupItem>();
         var succeeded = 0;
 
         foreach (var item in items)
@@ -64,12 +73,59 @@ public sealed class RegistryValueDeletionCleaner(IRegistryBackupService backupSe
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException)
             {
-                logger.LogWarning("Échec suppression valeur {Id} : {Error}", item.Id, ex.Message);
-                errors.Add(new CleanupError(item.Id, ex.Message));
+                deniedItems.Add(item);
             }
         }
 
+        if (deniedItems.Count > 0 && elevatedClient.IsSupported)
+        {
+            var (elevatedSucceeded, elevatedErrors) = await RetryElevatedAsync(deniedItems, cancellationToken);
+            succeeded += elevatedSucceeded;
+            errors.AddRange(elevatedErrors);
+        }
+        else
+        {
+            errors.AddRange(deniedItems.Select(i =>
+                new CleanupError(i.Id, "Droits administrateur requis pour supprimer cette valeur.")));
+        }
+
         return new CleanupResult { Mode = mode, SucceededCount = succeeded, FailedCount = errors.Count, FreedBytes = 0, Errors = errors };
+    }
+
+    private async Task<(int Succeeded, List<CleanupError> Errors)> RetryElevatedAsync(
+        List<CleanupItem> deniedItems, CancellationToken cancellationToken)
+    {
+        var operations = deniedItems.Select(item =>
+        {
+            var (keyId, valueName) = SplitValueId(item.Id);
+            var (hivePrefix, subKeyPath) = RegistryPathHelper.SplitKeyId(keyId);
+            return new ElevatedRegistryOperation(item.Id, ElevatedRegistryOperationKind.DeleteValue, hivePrefix, subKeyPath, valueName);
+        }).ToList();
+
+        var response = await elevatedClient.ExecuteAsync(operations, cancellationToken);
+        var errors = new List<CleanupError>();
+
+        if (!response.Success && response.Results.Count == 0)
+        {
+            logger.LogWarning("Retry élevé impossible pour {Count} valeur(s) : {Error}", deniedItems.Count, response.ErrorMessage);
+            return (0, deniedItems.Select(i => new CleanupError(i.Id, response.ErrorMessage ?? "Élévation impossible.")).ToList());
+        }
+
+        var succeeded = 0;
+        foreach (var result in response.Results)
+        {
+            if (result.Success)
+            {
+                succeeded++;
+                logger.LogInformation("Valeur de registre supprimée (élevée) : {Id}", result.OperationId);
+            }
+            else
+            {
+                errors.Add(new CleanupError(result.OperationId, result.ErrorMessage ?? "Échec de la suppression élevée."));
+            }
+        }
+
+        return (succeeded, errors);
     }
 
     private static (string KeyId, string ValueName) SplitValueId(string id)

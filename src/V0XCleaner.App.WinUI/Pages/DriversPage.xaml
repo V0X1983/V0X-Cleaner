@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="V0XCleaner.App.WinUI.Pages.DriversPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:V0XCleaner.App.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="DriverRowTemplate">
+            <Border BorderBrush="{ThemeResource BrushBorder}" BorderThickness="0,0,0,1" Padding="8,9">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" VerticalAlignment="Center"
+                              Visibility="{Binding Selectable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               ToolTipService.ToolTip="{Binding Title}" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding VersionText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="3" Text="{Binding DateText}" VerticalAlignment="Center" />
+                    <Button Grid.Column="4" Content="{Binding ActionLabel}" Padding="8,3" FontSize="11" HorizontalAlignment="Right"
+                            Visibility="{Binding ActionLabel, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
+                            Click="RowActionButton_Click" Tag="{Binding}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DriverGroupTemplate">
+            <StackPanel>
+                <Border Background="{ThemeResource BrushSurface}" Padding="0,9" Margin="0,4,0,0" CornerRadius="6">
+                    <StackPanel Orientation="Horizontal" Margin="8,0">
+                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" IsThreeState="True" VerticalAlignment="Center" Margin="0,0,12,0"
+                                  Visibility="{Binding ShowCheckbox, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <TextBlock Text="{Binding Header}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <ItemsControl ItemsSource="{Binding Rows}" ItemTemplate="{StaticResource DriverRowTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid Margin="32,24,32,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Mise à jour de pilotes" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,12" />
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding ObsoleteTabTitle}" IsChecked="{Binding IsObsoleteTab, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding UpToDateTabTitle}" IsChecked="{Binding IsUpToDateTab, Mode=TwoWay}" />
+                <RadioButton Style="{StaticResource TabStyle}" GroupName="driverTabs" Content="{Binding IgnoredTabTitle}" IsChecked="{Binding IsIgnoredTab, Mode=TwoWay}" />
+            </StackPanel>
+
+            <Border Grid.Row="2" BorderBrush="{ThemeResource BrushBorder}" BorderThickness="0,1,0,0" Padding="0,16,0,8">
+                <StackPanel>
+                    <TextBlock Text="{Binding Headline}" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                               Text="Pilotes signés proposés par Windows Update. Cochez ceux à installer ; ignorez ceux que vous voulez conserver tels quels." />
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="3" Margin="0,8,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="130" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Text="Pilotes" Foreground="{ThemeResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="2" Text="Version" Foreground="{ThemeResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="3" Text="Publiée" Foreground="{ThemeResource BrushTextSecondary}" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Groups}" ItemTemplate="{StaticResource DriverGroupTemplate}" />
+            </ScrollViewer>
+
+            <Border Grid.Row="5" Margin="0,12,0,0" Padding="16,12" CornerRadius="8" Background="{ThemeResource BrushSurface}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectionText}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding LastScanText}" Foreground="{ThemeResource BrushTextSecondary}" FontSize="12" />
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="{ThemeResource BrushAccent}" FontSize="12" TextWrapping="Wrap"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource NullOrEmptyToVisibilityConverter}}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Windows Update" Command="{Binding OpenWindowsUpdateCommand}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Content="Analyser à nouveau" Command="{Binding ScanCommand}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                    <Button Grid.Column="3" Content="Mise à jour sélectionnée" Style="{StaticResource PrimaryButtonStyle}"
+                            Click="InstallButton_Click" IsEnabled="{Binding HasSelection}" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
+        <controls:LoadingOverlay DataContext="{Binding Loading}" />
+    </Grid>
+</Page>

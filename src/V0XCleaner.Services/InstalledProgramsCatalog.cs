@@ -20,6 +20,7 @@ namespace V0XCleaner.Services;
 /// </summary>
 public sealed class InstalledProgramsCatalog(
     IRegistryBackupService backupService,
+    IElevatedOperationClient elevatedClient,
     IPathGuard pathGuard,
     ILoggerFactory loggerFactory) : IInstalledProgramsCatalog
 {
@@ -103,7 +104,7 @@ public sealed class InstalledProgramsCatalog(
             }
         }
 
-        var keyCleaner = new RegistryKeyDeletionCleaner(backupService, loggerFactory.CreateLogger<RegistryKeyDeletionCleaner>());
+        var keyCleaner = new RegistryKeyDeletionCleaner(backupService, elevatedClient, loggerFactory.CreateLogger<RegistryKeyDeletionCleaner>());
         var result = await keyCleaner.CleanAsync(
             [new CleanupItem { Id = program.Id, DisplayPath = program.Id, Category = CleanupCategory.Registry, SizeBytes = 0 }],
             OperationMode.Execute,

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "V0XCleaner.App.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "V0XCleaner.App.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

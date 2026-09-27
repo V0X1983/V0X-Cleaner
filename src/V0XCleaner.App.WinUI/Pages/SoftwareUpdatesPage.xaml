@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="V0XCleaner.App.WinUI.Pages.SoftwareUpdatesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:V0XCleaner.App.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Grid Margin="32,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="Mise à jour de logiciels" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                           Text="Recherche et installe les mises à jour de vos applications via winget (inclus dans Windows 11)." />
+            </StackPanel>
+
+            <!-- Titre de synthèse, affiché après une analyse qui a trouvé des mises à jour -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,16" Visibility="{Binding HasUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding HeadlineCount}" FontSize="22" FontWeight="SemiBold" Foreground="{ThemeResource BrushAccent}" />
+                    <TextBlock Text=" sont prêtes pour vous" FontSize="22" FontWeight="SemiBold" />
+                </StackPanel>
+                <TextBlock Foreground="{ThemeResource BrushTextSecondary}" Margin="0,4,0,0" TextWrapping="Wrap"
+                           Text="Tenez vos logiciels à jour pour en améliorer la vitesse, les performances et la sécurité." />
+            </StackPanel>
+
+            <!-- En-têtes de colonnes -->
+            <Grid Grid.Row="2" Margin="12,0,29,8" Visibility="{Binding HasUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="160" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Column="0" IsThreeState="True" IsChecked="{Binding AllSelected, Mode=TwoWay}" VerticalAlignment="Center"
+                          ToolTipService.ToolTip="Tout sélectionner" />
+                <TextBlock Grid.Column="1" Text="Logiciels" Foreground="{ThemeResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="2" Text="Version actuelle" Foreground="{ThemeResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="3" Text="Nouvelle version" Foreground="{ThemeResource BrushTextSecondary}" />
+                <TextBlock Grid.Column="4" Text="État" Foreground="{ThemeResource BrushTextSecondary}" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Updates}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{ThemeResource BrushSurface}" CornerRadius="6" Margin="0,0,0,6" Padding="12,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="36" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="230" />
+                                        <ColumnDefinition Width="160" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanUpdate}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Margin="0,0,8,0" ToolTipService.ToolTip="{Binding Name}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding CurrentVersion}" VerticalAlignment="Center"
+                                               Foreground="{ThemeResource BrushTextSecondary}" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                                    <TextBlock Grid.Column="3" Text="{Binding AvailableVersion}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                                    <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,8,0">
+                                        <!-- Deux TextBlock plutôt qu'un Style.Triggers/DataTrigger (inexistant en WinUI) : le
+                                             ThemeResource de chacun reste correct quel que soit le thème actif. -->
+                                        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTipService.ToolTip="{Binding Status}"
+                                                   Foreground="{ThemeResource BrushAccent}"
+                                                   Visibility="{Binding IsError, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTipService.ToolTip="{Binding Status}"
+                                                   Foreground="{ThemeResource BrushDanger}"
+                                                   Visibility="{Binding IsError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <ProgressBar Height="4" Margin="0,4,0,0" Minimum="0" Maximum="100"
+                                                     Value="{Binding ProgressValue, Mode=OneWay}" IsIndeterminate="{Binding IsIndeterminate}"
+                                                     Foreground="{ThemeResource BrushAccent}" Background="{ThemeResource BrushBorder}"
+                                                     Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="&#xE774;" FontFamily="Segoe Fluent Icons" Padding="8,3" FontSize="12"
+                                                VerticalAlignment="Center" Margin="0,0,8,0" ToolTipService.ToolTip="Ouvrir le site web de l'éditeur"
+                                                Click="OpenWebsiteButton_Click" Tag="{Binding}" />
+                                        <Button Content="Mettre à jour" Padding="8,3" FontSize="11" VerticalAlignment="Center"
+                                                Click="UpdateOneButton_Click" Tag="{Binding}" IsEnabled="{Binding CanUpdate}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Barre du bas (WinUI n'a pas de DockPanel : Grid équivalent) -->
+            <Grid Grid.Row="4" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="{ThemeResource BrushTextSecondary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" Text="{Binding SelectedText}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,16,0"
+                           Visibility="{Binding HasUpdates, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Button Grid.Column="2" Content="Analyser" Command="{Binding ScanCommand}" MinWidth="110" Margin="0,0,12,0" />
+                <Button Grid.Column="3" Content="Mettre à jour la sélection" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding UpdateSelectedCommand}" />
+            </Grid>
+        </Grid>
+        <controls:LoadingOverlay DataContext="{Binding Loading}" />
+    </Grid>
+</Page>

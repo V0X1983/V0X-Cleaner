@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="V0XCleaner.App.WinUI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:V0XCleaner.App.WinUI"
+    xmlns:helpers="using:V0XCleaner.App.WinUI.Helpers"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tb="using:H.NotifyIcon">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="Resources/Theme.xaml" />
+                <ResourceDictionary Source="Resources/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <helpers:FilePathToFileNameConverter x:Key="FilePathToFileNameConverter" />
+            <tkconverters:BoolToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <tkconverters:BoolNegationConverter x:Key="InverseBooleanConverter" />
+            <tkconverters:StringVisibilityConverter x:Key="NullOrEmptyToVisibilityConverter" />
+
+            <!--
+              H.NotifyIcon.WinUI (Phase 5) : contrairement à WPF (System.Windows.Application), WinUI 3
+              n'a pas de "racine" implicite pour héberger une icône de zone de notification hors
+              fenêtre — le pattern documenté par la bibliothèque est de déclarer le TaskbarIcon comme
+              ressource applicative (jamais affiché dans une fenêtre), puis d'appeler ForceCreate()
+              en code (Infrastructure/TrayIconService.cs) pour le matérialiser.
+              Pas d'IconSource ici : la conversion WinRT (ms-appx:///) échoue silencieusement tant que
+              l'app n'a pas d'identité de paquet réelle (double-clic direct sur l'exe en dev) — l'icône
+              est chargée directement depuis le disque (System.Drawing.Icon) dans TrayIconService.
+            -->
+            <tb:TaskbarIcon x:Key="TrayIcon"
+                            ToolTipText="V0X Cleaner"
+                            NoLeftClickDelay="True" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
