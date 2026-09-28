@@ -163,6 +163,8 @@ public partial class CleanerPageViewModel : ObservableObject
                 }
 
                 taskVm.Status = CleaningTaskStatus.Cleaning;
+                var verbLabel = SimulationMode ? "Simulation" : "Nettoyage";
+                Loading.Message = $"{verbLabel} en cours : {taskVm.Task.DisplayName} ({taskVm.LastScanItems.Count:N0} élément(s))...";
                 try
                 {
                     var result = await Task.Run(() => taskVm.Task.Cleaner.CleanAsync(taskVm.LastScanItems, mode, ct), ct);

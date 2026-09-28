@@ -43,8 +43,18 @@
                 <ColumnDefinition Width="80" />
                 <ColumnDefinition Width="210" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Programme" Foreground="{ThemeResource BrushTextSecondary}" />
-            <TextBlock Grid.Column="1" Text="Taille" HorizontalAlignment="Right" Foreground="{ThemeResource BrushTextSecondary}" />
+            <Button Grid.Column="0" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Padding="0"
+                    Command="{Binding SortByNameCommand}" ToolTipService.ToolTip="Trier par nom">
+                <TextBlock Foreground="{ThemeResource BrushTextSecondary}">
+                    <Run Text="Programme" /><Run Text=" " /><Run Text="{Binding NameSortGlyph}" />
+                </TextBlock>
+            </Button>
+            <Button Grid.Column="1" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="0"
+                    Command="{Binding SortBySizeCommand}" ToolTipService.ToolTip="Trier par taille">
+                <TextBlock Foreground="{ThemeResource BrushTextSecondary}">
+                    <Run Text="Taille" /><Run Text=" " /><Run Text="{Binding SizeSortGlyph}" />
+                </TextBlock>
+            </Button>
         </Grid>
 
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">

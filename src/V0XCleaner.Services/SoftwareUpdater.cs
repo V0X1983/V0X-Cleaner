@@ -71,8 +71,20 @@ public sealed partial class SoftwareUpdater(ILogger<SoftwareUpdater> logger) : I
             return new SoftwareUpdateResult(true);
         }
 
+        if (IsRebootRequiredExitCode(exitCode))
+        {
+            return new SoftwareUpdateResult(true, RestartRequired: true);
+        }
+
         return new SoftwareUpdateResult(false, ExplainFailure(output, exitCode));
     }
+
+    /// <summary>
+    /// Codes de sortie Windows Installer standard indiquant un succès qui exige un redémarrage :
+    /// 3010 (ERROR_SUCCESS_REBOOT_REQUIRED, le plus courant) et 1641 (ERROR_SUCCESS_REBOOT_INITIATED,
+    /// l'installateur a lui-même lancé le redémarrage). winget les relaie tels quels comme code de sortie.
+    /// </summary>
+    internal static bool IsRebootRequiredExitCode(int exitCode) => exitCode is 3010 or 1641;
 
     public async Task<Uri?> GetWebsiteAsync(string packageId, CancellationToken cancellationToken = default)
     {

@@ -26,4 +26,15 @@ public class SoftwareUpdaterParseTests
     {
         Assert.Empty(SoftwareUpdater.Parse("Aucune mise à niveau disponible."));
     }
+
+    [Theory]
+    [InlineData(3010, true)]
+    [InlineData(1641, true)]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(1602, false)]
+    public void DetectsRebootRequiredExitCodes(int exitCode, bool expected)
+    {
+        Assert.Equal(expected, SoftwareUpdater.IsRebootRequiredExitCode(exitCode));
+    }
 }

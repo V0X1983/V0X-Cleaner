@@ -5,6 +5,7 @@ public enum ProgramSortMode
     NameAscending,
     NameDescending,
     SizeDescending,
+    SizeAscending,
     PublisherAscending,
     InstallDateDescending
 }

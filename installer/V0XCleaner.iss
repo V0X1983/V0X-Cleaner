@@ -49,4 +49,9 @@ Filename: "{app}\V0XCleaner.exe"; Description: "Lancer V0X Cleaner"; Flags: nowa
 Filename: "schtasks.exe"; Parameters: "/Delete /TN ""V0XCleaner AutoClean"" /F"; Flags: runhidden; RunOnceId: "DelAutoCleanTask"
 
 [Registry]
+; ISCC émet "UsedUserAreasWarning" ici (HKCU + PrivilegesRequired=admin) : sans effet réel pour cette
+; app mono-utilisateur — l'élévation UAC réutilise le jeton du même utilisateur interactif, donc HKCU
+; désigne toujours la bonne ruche au moment de la désinstallation (nettoyage de la clé Run que l'app
+; elle-même écrit sans élévation, via Options > « Lancer avec Windows »). dontcreatekey évite de créer
+; la clé si l'utilisateur n'a jamais activé ce réglage.
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: "V0XCleaner"; Flags: uninsdeletevalue dontcreatekey

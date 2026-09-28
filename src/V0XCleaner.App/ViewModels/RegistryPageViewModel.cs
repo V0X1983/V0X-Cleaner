@@ -155,7 +155,7 @@ public partial class RegistryPageViewModel : ObservableObject
                 }
 
                 taskVm.Status = CleaningTaskStatus.Cleaning;
-                Loading.Message = $"Réparation : {taskVm.Task.DisplayName}";
+                Loading.Message = $"Réparation : {taskVm.Task.DisplayName} ({taskVm.LastScanItems.Count:N0} élément(s))";
                 try
                 {
                     ct.ThrowIfCancellationRequested();

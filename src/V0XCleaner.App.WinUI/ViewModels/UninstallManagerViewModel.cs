@@ -20,9 +20,26 @@ public partial class UninstallManagerViewModel : ObservableObject
         new(ProgramSortMode.NameAscending, "Nom (A→Z)"),
         new(ProgramSortMode.NameDescending, "Nom (Z→A)"),
         new(ProgramSortMode.SizeDescending, "Taille (plus grand d'abord)"),
+        new(ProgramSortMode.SizeAscending, "Taille (plus petit d'abord)"),
         new(ProgramSortMode.PublisherAscending, "Éditeur"),
         new(ProgramSortMode.InstallDateDescending, "Date d'installation (récent d'abord)")
     ];
+
+    /// <summary>Glyphe affiché dans l'en-tête « Programme » quand le tri actuel porte sur le nom (cliquable, bascule A→Z / Z→A).</summary>
+    public string NameSortGlyph => SelectedSortOption.Mode switch
+    {
+        ProgramSortMode.NameAscending => "▲",
+        ProgramSortMode.NameDescending => "▼",
+        _ => string.Empty
+    };
+
+    /// <summary>Glyphe affiché dans l'en-tête « Taille » quand le tri actuel porte sur la taille (cliquable, bascule les deux sens).</summary>
+    public string SizeSortGlyph => SelectedSortOption.Mode switch
+    {
+        ProgramSortMode.SizeDescending => "▼",
+        ProgramSortMode.SizeAscending => "▲",
+        _ => string.Empty
+    };
 
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
@@ -176,7 +193,24 @@ public partial class UninstallManagerViewModel : ObservableObject
 
     partial void OnSearchTextChanged(string value) => ApplyFilterAndSort();
 
-    partial void OnSelectedSortOptionChanged(ProgramSortOption value) => ApplyFilterAndSort();
+    partial void OnSelectedSortOptionChanged(ProgramSortOption value)
+    {
+        OnPropertyChanged(nameof(NameSortGlyph));
+        OnPropertyChanged(nameof(SizeSortGlyph));
+        ApplyFilterAndSort();
+    }
+
+    /// <summary>Clic sur l'en-tête « Programme » : bascule A→Z / Z→A (A→Z par défaut si le tri actuel ne porte pas sur le nom).</summary>
+    [RelayCommand]
+    private void SortByName() =>
+        SelectedSortOption = SortOptions.First(o => o.Mode ==
+            (SelectedSortOption.Mode == ProgramSortMode.NameAscending ? ProgramSortMode.NameDescending : ProgramSortMode.NameAscending));
+
+    /// <summary>Clic sur l'en-tête « Taille » : bascule les deux sens (plus grand d'abord par défaut si le tri actuel ne porte pas sur la taille).</summary>
+    [RelayCommand]
+    private void SortBySize() =>
+        SelectedSortOption = SortOptions.First(o => o.Mode ==
+            (SelectedSortOption.Mode == ProgramSortMode.SizeDescending ? ProgramSortMode.SizeAscending : ProgramSortMode.SizeDescending));
 
     private void ApplyFilterAndSort()
     {
@@ -194,6 +228,7 @@ public partial class UninstallManagerViewModel : ObservableObject
             ProgramSortMode.NameAscending => query.OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase),
             ProgramSortMode.NameDescending => query.OrderByDescending(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase),
             ProgramSortMode.SizeDescending => query.OrderByDescending(p => p.Program.EstimatedSizeBytes ?? 0),
+            ProgramSortMode.SizeAscending => query.OrderBy(p => p.Program.EstimatedSizeBytes ?? 0),
             ProgramSortMode.PublisherAscending => query.OrderBy(p => p.Publisher, StringComparer.CurrentCultureIgnoreCase),
             ProgramSortMode.InstallDateDescending => query.OrderByDescending(p => p.Program.InstallDate ?? DateTime.MinValue),
             _ => query

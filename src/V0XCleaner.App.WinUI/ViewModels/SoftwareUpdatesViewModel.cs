@@ -40,7 +40,16 @@ public partial class SoftwareUpdateItemViewModel(SoftwareUpdate update) : Observ
 
     /// <summary>Vrai quand la dernière tentative de mise à jour a échoué (le statut s'affiche alors en rouge).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNormalStatus))]
     public partial bool IsError { get; set; }
+
+    /// <summary>Vrai quand la mise à jour a réussi mais exige un redémarrage (le statut s'affiche alors en orange).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNormalStatus))]
+    public partial bool IsRestartRequired { get; set; }
+
+    /// <summary>Ni erreur ni redémarrage requis : les trois états du statut sont mutuellement exclusifs côté affichage (pas de Style.Triggers en WinUI).</summary>
+    public bool IsNormalStatus => !IsError && !IsRestartRequired;
 
     /// <summary>Vrai pendant le téléchargement et l'installation ; affiche la barre de progression de la ligne.</summary>
     [ObservableProperty]
@@ -189,12 +198,15 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         using var guard = ShutdownGuard.Begin("Mise à jour de logiciels en cours");
         try
         {
-            foreach (var item in Updates.Where(u => u.IsSelected && !u.IsUpdated).ToList())
+            var toUpdate = Updates.Where(u => u.IsSelected && !u.IsUpdated).ToList();
+            foreach (var item in toUpdate)
             {
                 await UpdateItemAsync(item);
             }
 
-            StatusMessage = "Mises à jour terminées. Relancez l'analyse pour vérifier.";
+            StatusMessage = toUpdate.Any(u => u.IsRestartRequired)
+                ? "Mises à jour terminées. Redémarrez le PC pour finaliser certains logiciels."
+                : "Mises à jour terminées. Relancez l'analyse pour vérifier.";
         }
         finally
         {
@@ -268,9 +280,12 @@ public partial class SoftwareUpdatesViewModel : ObservableObject
         {
             var result = await Task.Run(() => _updater.UpdateAsync(item.Update.Id, progress));
             finished = true;
-            item.Status = result.Success ? "Mis à jour" : result.Message ?? "Échec de la mise à jour.";
             item.IsUpdated = result.Success;
             item.IsError = !result.Success;
+            item.IsRestartRequired = result.Success && result.RestartRequired;
+            item.Status = result.Success
+                ? (result.RestartRequired ? "Mis à jour — redémarrage requis" : "Mis à jour")
+                : result.Message ?? "Échec de la mise à jour.";
         }
         catch (Exception ex)
         {

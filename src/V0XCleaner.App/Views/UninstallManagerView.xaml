@@ -42,8 +42,18 @@
                 <ColumnDefinition Width="80" />
                 <ColumnDefinition Width="210" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Programme" Foreground="{StaticResource BrushTextSecondary}" />
-            <TextBlock Grid.Column="1" Text="Taille" HorizontalAlignment="Right" Foreground="{StaticResource BrushTextSecondary}" />
+            <Button Grid.Column="0" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                    Command="{Binding SortByNameCommand}" ToolTip="Trier par nom">
+                <TextBlock Foreground="{StaticResource BrushTextSecondary}">
+                    <Run Text="Programme" /><Run Text=" " /><Run Text="{Binding NameSortGlyph, Mode=OneWay}" />
+                </TextBlock>
+            </Button>
+            <Button Grid.Column="1" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                    Command="{Binding SortBySizeCommand}" ToolTip="Trier par taille">
+                <TextBlock Foreground="{StaticResource BrushTextSecondary}">
+                    <Run Text="Taille" /><Run Text=" " /><Run Text="{Binding SizeSortGlyph, Mode=OneWay}" />
+                </TextBlock>
+            </Button>
         </Grid>
 
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">

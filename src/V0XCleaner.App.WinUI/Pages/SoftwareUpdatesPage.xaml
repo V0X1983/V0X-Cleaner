@@ -74,14 +74,18 @@
                                     <TextBlock Grid.Column="3" Text="{Binding AvailableVersion}" VerticalAlignment="Center"
                                                TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
                                     <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,8,0">
-                                        <!-- Deux TextBlock plutôt qu'un Style.Triggers/DataTrigger (inexistant en WinUI) : le
-                                             ThemeResource de chacun reste correct quel que soit le thème actif. -->
+                                        <!-- Trois TextBlock plutôt qu'un Style.Triggers/DataTrigger (inexistant en WinUI) : le
+                                             ThemeResource de chacun reste correct quel que soit le thème actif. IsNormalStatus
+                                             (ni erreur ni redémarrage requis) rend les trois visibilités mutuellement exclusives. -->
                                         <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTipService.ToolTip="{Binding Status}"
                                                    Foreground="{ThemeResource BrushAccent}"
-                                                   Visibility="{Binding IsError, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                                   Visibility="{Binding IsNormalStatus, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTipService.ToolTip="{Binding Status}"
                                                    Foreground="{ThemeResource BrushDanger}"
                                                    Visibility="{Binding IsError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" MaxHeight="40" ToolTipService.ToolTip="{Binding Status}"
+                                                   Foreground="{ThemeResource BrushWarning}"
+                                                   Visibility="{Binding IsRestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <ProgressBar Height="4" Margin="0,4,0,0" Minimum="0" Maximum="100"
                                                      Value="{Binding ProgressValue, Mode=OneWay}" IsIndeterminate="{Binding IsIndeterminate}"
                                                      Foreground="{ThemeResource BrushAccent}" Background="{ThemeResource BrushBorder}"
