@@ -56,6 +56,12 @@
                 <StackPanel DockPanel.Dock="Top" Margin="20,24,20,20">
                     <TextBlock Text="V0X Cleaner" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushAccent}" />
                     <TextBlock Text="{Binding VersionLabel}" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" Margin="0,2,0,0" />
+                    <TextBlock Text="{Binding UpdateAvailableLabel}" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap"
+                               Foreground="{StaticResource BrushAccent}" Margin="0,6,0,0" Cursor="Hand"
+                               ToolTip="Ouvrir la page de la version (Options permet aussi de la télécharger et l'installer)"
+                               MouseLeftButtonUp="UpdateAvailableLabel_Click"
+                               Visibility="{Binding UpdateAvailableLabel, Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
+                               TextDecorations="Underline" />
                 </StackPanel>
 
                 <Border DockPanel.Dock="Bottom" Margin="12,0,12,16" Padding="12,10" CornerRadius="8"

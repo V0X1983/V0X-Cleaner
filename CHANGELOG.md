@@ -2,6 +2,11 @@
 
 ## Non publié
 
+- Désinstalleur : tri par clic sur les colonnes Programme/Taille (bascule du sens, en plus du menu de tri existant).
+- Mise à jour de logiciels : les mises à jour qui exigent un redémarrage (ex. pilotes, gros runtimes) ne s'affichent plus à tort comme échouées.
+- Nettoyeur et Registre : l'écran de chargement affiche la catégorie en cours et son nombre d'éléments pendant un gros nettoyage.
+- Vérification automatique (silencieuse) d'une nouvelle version au démarrage : un lien discret apparaît dans le menu latéral si une version plus récente existe (ouvre la page de la release ; le téléchargement et l'installation restent une action manuelle depuis Options).
+
 ## 0.2.0
 
 - Nouvelles pages : Mise à jour de logiciels (winget), Mise à jour de pilotes (liste + Windows Update), Optimiseur de performances, Aide.

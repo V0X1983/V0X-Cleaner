@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using V0XCleaner.App.WinUI.Infrastructure;
+using V0XCleaner.Core;
 using V0XCleaner.Core.Abstractions;
 using V0XCleaner.Services.Native;
 
@@ -172,7 +173,7 @@ public partial class OptionsViewModel : ObservableObject
             }
 
             var installed = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            if (!Version.TryParse(result.Version, out var latest) || installed is null || latest <= new Version(installed.Major, installed.Minor, Math.Max(installed.Build, 0)))
+            if (!UpdateVersionComparer.IsNewer(result.Version, installed))
             {
                 UpdateStatusMessage = $"V0X Cleaner est à jour (version {installed?.ToString(3)}).";
                 return;

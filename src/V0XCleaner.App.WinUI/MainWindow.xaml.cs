@@ -2,9 +2,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using V0XCleaner.App.WinUI.Pages;
 using V0XCleaner.App.WinUI.ViewModels;
 using V0XCleaner.Core.Abstractions;
+using Windows.System;
 
 namespace V0XCleaner.App.WinUI;
 
@@ -62,6 +64,16 @@ public sealed partial class MainWindow : Window
     private void TitleBar_BackRequested(TitleBar sender, object args)
     {
         NavFrame.GoBack();
+    }
+
+    private async void UpdateAvailableLabel_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ViewModel.UpdateAvailableUrl) || !Uri.TryCreate(ViewModel.UpdateAvailableUrl, UriKind.Absolute, out var uri))
+        {
+            return;
+        }
+
+        await Launcher.LaunchUriAsync(uri);
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
